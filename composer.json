@@ -12,14 +12,15 @@
         "php": "^7.2",
         "limboniatech/limbonia-email": "^0.9.0",
         "limboniatech/limbonia-session-manager": "^1.0",
-        "limboniatech/limbonia-zip": "^0.9.0"
+        "limboniatech/limbonia-zip": "^0.9.0",
+        "limboniatech/limbonia-tag": "^1.0",
+        "limboniatech/limbonia-base": "^1.0",
+        "limboniatech/limbonia-database": "^1.0",
+        "limboniatech/limbonia-result": "^1.0"
     },
     "autoload": {
         "psr-4": {
             "Limbonia\\": "lib/"
         }
-    },
-    "require-dev": {
-        "phpunit/phpunit": "^8.4"
     }
 }
