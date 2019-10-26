@@ -29,15 +29,15 @@ class TransferSelect extends \Limbonia\Widget
    * Call the parent constructor and create the child select objects.
    *
    * @param type $sName
-   * @param \Limbonia\Controller $oController
+   * @param \Limbonia\App $oApp
    */
-  public function __construct($sName = null, \Limbonia\Controller $oController = null)
+  public function __construct($sName = null, \Limbonia\App $oApp = null)
   {
-    parent::__construct($sName, $oController);
-    $this->oFrom = $this->getController()->widgetFactory('Select', 'From_' . $this->sName);
+    parent::__construct($sName, $oApp);
+    $this->oFrom = $this->getApp()->widgetFactory('Select', 'From_' . $this->sName);
     $this->sFrom = $this->oFrom->getId();
     $this->oFrom->isMultiple(TRUE);
-    $this->oTo = $this->getController()->widgetFactory('Select', $this->sName);
+    $this->oTo = $this->getApp()->widgetFactory('Select', $this->sName);
     $this->oTo->isMultiple(TRUE);
     $this->sTo = $this->oTo->getId();
   }

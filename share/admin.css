@@ -95,7 +95,7 @@ header a
   vertical-align: top;
 }
 
-#admin > nav > .moduleGroup
+#admin > nav > .controllerGroup
 {
   font-weight: bold;
   border-width: 0.1em;
@@ -125,7 +125,7 @@ header a
   color: #5555ff;
 }
 
-#admin > nav > .module
+#admin > nav > .controller
 {
   background-color: #ddddff;
   border-color: #5555ff;
@@ -135,7 +135,7 @@ header a
   margin: 0 0 1em 0;
 }
 
-#admin > nav > .module > .title
+#admin > nav > .controller > .title
 {
   font-weight: bold;
   font-style: italic;
@@ -144,12 +144,12 @@ header a
   letter-spacing: 0.1em;
 }
 
-#admin > nav > .module > form
+#admin > nav > .controller > form
 {
   margin-top: 0.5em;
 }
 
-#admin > nav > .module > form > input
+#admin > nav > .controller > form > input
 {
   display: block;
   width: 6em;
@@ -212,55 +212,55 @@ header a
   color: white;
 }
 
-#admin > #content > #moduleOutput > #item
+#admin > #content > #controllerOutput > #model
 {
   min-width: 70%;
   max-width: 100%;
 }
 
-#admin > #content > #moduleOutput > #item > .title
+#admin > #content > #controllerOutput > #model > .title
 {
   font-weight: bold;
   font-variant: small-caps;
   margin-left: 0.5em;
 }
 
-#admin > #content > #moduleOutput > #item > .tabSet
+#admin > #content > #controllerOutput > #model > .tabSet
 {
   border-bottom-color: #bbbb99;
   margin: 0;
 }
 
-#admin > #content > #moduleOutput > #item > .tabSet > .current.tab
+#admin > #content > #controllerOutput > #model > .tabSet > .current.tab
 {
   border-color: #bbbb99 #bbbb99 #fffffc #bbbb99;
   background-color: #fffffc;
 }
 
-#admin > #content > #moduleOutput > #item > .tabSet > a.current.tab
+#admin > #content > #controllerOutput > #model > .tabSet > a.current.tab
 {
 }
 
-#admin > #content > #moduleOutput > #item > .tabSet > a.tab
+#admin > #content > #controllerOutput > #model > .tabSet > a.tab
 {
   border-color: #bbbb99;
 }
 
-#admin > #content > #moduleOutput > #item > .tabSet > a.tab:link,
-#admin > #content > #moduleOutput > #item > .tabSet > a.tab:active,
-#admin > #content > #moduleOutput > #item > .tabSet > a.tab:visited
+#admin > #content > #controllerOutput > #model > .tabSet > a.tab:link,
+#admin > #content > #controllerOutput > #model > .tabSet > a.tab:active,
+#admin > #content > #controllerOutput > #model > .tabSet > a.tab:visited
 {
   color: #5555ff;
 }
 
-#admin > #content > #moduleOutput > #item > .tabSet > a.current.tab:hover,
-#admin > #content > #moduleOutput > #item > .tabSet > a.tab:hover
+#admin > #content > #controllerOutput > #model > .tabSet > a.current.tab:hover,
+#admin > #content > #controllerOutput > #model > .tabSet > a.tab:hover
 {
   background-color: #5555ff;
   color: white;
 }
 
-#admin > #content > #moduleOutput > #item > #page
+#admin > #content > #controllerOutput > #model > #page
 {
   border-style: solid;
   border-color: #bbbb99;
@@ -270,12 +270,12 @@ header a
   padding: 1em 0.5em 0.5em 0.5em;
 }
 
-#admin > #content > #moduleOutput > #item > #page .sortGrid
+#admin > #content > #controllerOutput > #model > #page .sortGrid
 {
   background-color: #ddddff;
 }
 
-#admin > #content > #moduleOutput > #item > #page > .field
+#admin > #content > #controllerOutput > #model > #page > .field
 {
   margin: 0.5em;
 }
@@ -357,12 +357,12 @@ header a
   background-color: #eeeeff;
 }
 
-.moduleMenu
+.controllerMenu
 {
   max-width: 50em;
 }
 
-.moduleMenu > header
+.controllerMenu > header
 {
   background-color: inherit;
   font-weight: bold;
@@ -374,12 +374,12 @@ header a
   border-bottom: 0.1em solid #000099;
 }
 
-.moduleMenu > .content
+.controllerMenu > .content
 {
   padding: 0.5em 0;
 }
 
-.moduleMenu > footer
+.controllerMenu > footer
 {
   background-color: inherit;
   font-size: 0.8em;
@@ -565,7 +565,7 @@ header a
   z-index: 1000;
 }
 
-#item > #page > .overlay
+#model > #page > .overlay
 {
   border-style: solid;
   border-color: black;

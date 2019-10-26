@@ -22,12 +22,12 @@ class Input extends \Limbonia\Widget
    * It increments the widget counter and generates a unique (but human readable) name.
    *
    * @param string $sName (optional)
-   * @param \Limbonia\Controller $oController (optional)
+   * @param \Limbonia\App $oApp (optional)
    * @throws Limbonia\Exception\Object
    */
-  public function __construct($sName = null, \Limbonia\Controller $oController = null)
+  public function __construct($sName = null, \Limbonia\App $oApp = null)
   {
-    parent::__construct($sName, $oController);
+    parent::__construct($sName, $oApp);
     $this->sScript .= "var $this->sName = document.getElementById(\"$this->sName\");\n";
     $this->setParam('type', $this->sType);
     $this->setValue('');

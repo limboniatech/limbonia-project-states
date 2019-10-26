@@ -31,8 +31,8 @@ class Router
     'baseurl',
     'rawpath',
     'path',
+    'app',
     'controller',
-    'module',
     'id',
     'action',
     'subid',
@@ -61,7 +61,7 @@ class Router
   protected $hDefault =
   [
     'method' => 'get',
-    'controller' => 'web'
+    'app' => 'web'
   ];
 
   /**
@@ -128,7 +128,7 @@ class Router
     if (isset($hData['uri']))
     {
       $hUri = parse_url($hData['uri']);
-      $sWebTypes = implode('|', Controller::WEB_TYPES);
+      $sWebTypes = implode('|', App::WEB_TYPES);
 
       if (isset($this->hData['baseurl']) && preg_match("#{$this->hData['baseurl']}/(.*$)#", $hUri['path'], $aMatch))
       {
@@ -176,12 +176,12 @@ class Router
     $this->hData['path'] = strtolower($this->hData['rawpath']);
     $this->hData['call'] = explode('/', $this->hData['path']);
 
-    if (isset($this->hData['call'][0]) && in_array($this->hData['call'][0], Controller::WEB_TYPES))
+    if (isset($this->hData['call'][0]) && in_array($this->hData['call'][0], App::WEB_TYPES))
     {
       array_shift($this->hData['call']);
     }
 
-    $this->hData['module'] = $this->hData['call'][0] ?? null;
+    $this->hData['controller'] = $this->hData['call'][0] ?? null;
     $this->hData['id'] = null;
 
     if (isset($this->hData['call'][1]) && is_numeric($this->hData['call'][1]))

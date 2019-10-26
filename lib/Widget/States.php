@@ -19,14 +19,14 @@ class States extends Select
    * It increments the widget counter and generates a unique (but human readable) name.
    *
    * @param string $sName (optional)
-   * @param \Limbonia\Controller $oController (optional)
+   * @param \Limbonia\App $oApp (optional)
    * @throws Limbonia\Exception\Object
    */
-  public function __construct($sName = null, \Limbonia\Controller $oController = null)
+  public function __construct($sName = null, \Limbonia\App $oApp = null)
   {
-    parent::__construct($sName, $oController);
+    parent::__construct($sName, $oApp);
     $this->sType = 'select';
-    $hState = array_merge(['0' => 'Select a State'] , \Limbonia\Item\States::getStateList());
+    $hState = array_merge(['0' => 'Select a State'] , \Limbonia\Model\States::getStateList());
     $this->addArray($hState);
   }
 
@@ -46,7 +46,7 @@ class States extends Select
 
     if ($sState != '0')
     {
-      $oCity = $this->getController()->itemFactory('ZipCode')->getCitiesByState($sState);
+      $oCity = $this->getApp()->modelFactory('ZipCode')->getCitiesByState($sState);
 
       foreach ($oCity as $iKey => $hData)
       {
@@ -82,7 +82,7 @@ class States extends Select
     if ($sCity != '0')
     {
       $sCity = str_replace('%20', ' ', $sCity);
-      $oZip = $this->getController()->itemFactory('ZipCode')->getZipsByCity($sCity, $sState);
+      $oZip = $this->getApp()->modelFactory('ZipCode')->getZipsByCity($sCity, $sState);
 
       foreach ($oZip as $iKey => $hData)
       {

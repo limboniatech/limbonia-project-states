@@ -1,18 +1,18 @@
 <?php
-namespace Limbonia\Item;
+namespace Limbonia\Model;
 
 /**
- * Limbonia Resource Item Class
+ * Limbonia Resource Model Class
  *
- * Item based wrapper around the ResourceLock table
+ * Model based wrapper around the ResourceLock table
  *
  * @author Lonnie Blansett <lonnie@limbonia.tech>
  * @package Limbonia
  */
-class ResourceKey extends \Limbonia\Item
+class ResourceKey extends \Limbonia\Model
 {
   /**
-   * The database schema for creating this item's table in the database
+   * The database schema for creating this model's table in the database
    *
    * @var string
    */
@@ -22,7 +22,7 @@ PRIMARY KEY (`KeyID`),
 UNIQUE KEY `Unique_ResourceName` (`Name`)";
 
   /**
-   * The columns for this item's tables
+   * The columns for this model's tables
    *
    * @var array
    */
@@ -44,7 +44,7 @@ UNIQUE KEY `Unique_ResourceName` (`Name`)";
   ];
 
   /**
-   * The aliases for this item's columns
+   * The aliases for this model's columns
    *
    * @var array
    */
@@ -56,7 +56,7 @@ UNIQUE KEY `Unique_ResourceName` (`Name`)";
   ];
 
   /**
-   * The default data used for "blank" or "empty" items
+   * The default data used for "blank" or "empty" models
    *
    * @var array
    */

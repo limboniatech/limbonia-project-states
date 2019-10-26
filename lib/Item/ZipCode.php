@@ -1,18 +1,18 @@
 <?php
-namespace Limbonia\Item;
+namespace Limbonia\Model;
 
 /**
- * Limbonia Zip Code Item Class
+ * Limbonia Zip Code Model Class
  *
- * Item based wrapper around the ZipCode table
+ * Model based wrapper around the ZipCode table
  *
  * @author Lonnie Blansett <lonnie@limbonia.tech>
  * @package Limbonia
  */
-class ZipCode extends \Limbonia\Item
+class ZipCode extends \Limbonia\Model
 {
   /**
-   * The database schema for creating this item's table in the database
+   * The database schema for creating this model's table in the database
    *
    * @var string
    */
@@ -30,7 +30,7 @@ KEY `Index_State` (`State`),
 KEY `Index_Latitude_Longitude` (`Latitude`,`Longitude`)";
 
   /**
-   * The columns for this item's tables
+   * The columns for this model's tables
    *
    * @var array
    */
@@ -88,7 +88,7 @@ KEY `Index_Latitude_Longitude` (`Latitude`,`Longitude`)";
   ];
 
   /**
-   * The aliases for this item's columns
+   * The aliases for this model's columns
    *
    * @var array
    */
@@ -107,7 +107,7 @@ KEY `Index_Latitude_Longitude` (`Latitude`,`Longitude`)";
   ];
 
   /**
-   * The default data used for "blank" or "empty" items
+   * The default data used for "blank" or "empty" models
    *
    * @var array
    */
@@ -262,7 +262,7 @@ KEY `Index_Latitude_Longitude` (`Latitude`,`Longitude`)";
    * Get the
    *
    * @param integer $iZip
-   * @return \Limbonia\Item
+   * @return \Limbonia\Model
    */
   public function getCityByZip($iZip)
   {

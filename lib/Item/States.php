@@ -1,18 +1,18 @@
 <?php
-namespace Limbonia\Item;
+namespace Limbonia\Model;
 
 /**
- * Limbonia State Item Class
+ * Limbonia State Model Class
  *
- * Item based wrapper around the States table
+ * Model based wrapper around the States table
  *
  * @author Lonnie Blansett <lonnie@limbonia.tech>
  * @package Limbonia
  */
-class States extends \Limbonia\Item
+class States extends \Limbonia\Model
 {
   /**
-   * The database schema for creating this item's table in the database
+   * The database schema for creating this model's table in the database
    *
    * @var string
    */
@@ -22,7 +22,7 @@ class States extends \Limbonia\Item
 PRIMARY KEY (`PostalCode`)";
 
   /**
-   * The columns for this item's tables
+   * The columns for this model's tables
    *
    * @var array
    */
@@ -48,7 +48,7 @@ PRIMARY KEY (`PostalCode`)";
   ];
 
   /**
-   * The aliases for this item's columns
+   * The aliases for this model's columns
    *
    * @var array
    */
@@ -61,7 +61,7 @@ PRIMARY KEY (`PostalCode`)";
   ];
 
   /**
-   * The default data used for "blank" or "empty" items
+   * The default data used for "blank" or "empty" models
    *
    * @var array
    */

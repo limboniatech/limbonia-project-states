@@ -1,71 +1,71 @@
 /**
- * The current module name
+ * The current controller name
  *
  * @type String
  */
-var sCurrentModule = '';
+var sCurrentController = '';
 
 /**
- * The ID of the current Item
+ * The ID of the current Model
  *
  * @type Number
  */
-var iCurrentItemId = 0;
+var iCurrentModelId = 0;
 
 /**
- * Generate and return the module name from the specified URL
+ * Generate and return the controller name from the specified URL
  *
- * @param {String} sUrl - The URL to extract the module name from, if there is one
+ * @param {String} sUrl - The URL to extract the controller name from, if there is one
  * @returns {String}
  */
-function urlModule(sUrl)
+function urlController(sUrl)
 {
   var aMatches = sUrl.match(/^.*admin\/(.*?)(\/|$)/);
   return aMatches && aMatches.length > 0 ? aMatches[1] : '';
 }
 
 /**
- * Generate and return the item ID from the specified URL
+ * Generate and return the model ID from the specified URL
  *
- * @param {String} sUrl - The URL to extract the item ID from, if there is one
+ * @param {String} sUrl - The URL to extract the model ID from, if there is one
  * @returns {String}
  */
-function urlItemId(sUrl)
+function urlModelId(sUrl)
 {
   var aMatches = sUrl.match(/^.*admin\/.*?\/(\d+?)/);
   return aMatches && aMatches.length > 0 ? parseInt(aMatches[1]) : 0;
 }
 
 /**
- * Generate the item section from the specified data, then insert it into the DOM
+ * Generate the model section from the specified data, then insert it into the DOM
  *
  * @param {Object} oData
  */
-function buildItem(oData)
+function buildModel(oData)
 {
-  var sLowerModule = oData.moduleType.toLowerCase();
-  var sItemNav = '';
-  var sPageTitle = oData.moduleType + ' #' + oData.id + ' > ' + oData.itemTitle + ' > ' + oData.action.charAt(0).toUpperCase() + oData.action.slice(1);
+  var sLowerController = oData.controllerType.toLowerCase();
+  var sModelNav = '';
+  var sPageTitle = oData.controllerType + ' #' + oData.id + ' > ' + oData.modelTitle + ' > ' + oData.action.charAt(0).toUpperCase() + oData.action.slice(1);
   $(document).prop('title', sPageTitle);
 
   for (var sAction in oData.subMenu)
   {
     var sCurrent = oData.action === sAction ? 'current ' : '';
-    sItemNav += '  <a class="item ' + sCurrent + 'tab ' + sLowerModule + ' ' + sAction + '" href="' + oData.itemUri + '/' + sAction + '">' + oData.subMenu[sAction] + '</a>\n';
+    sModelNav += '  <a class="model ' + sCurrent + 'tab ' + sLowerController + ' ' + sAction + '" href="' + oData.modelUri + '/' + sAction + '">' + oData.subMenu[sAction] + '</a>\n';
   }
 
-  if (iCurrentItemId !== oData.id)
+  if (iCurrentModelId !== oData.id)
   {
-    iCurrentItemId = oData.id;
+    iCurrentModelId = oData.id;
     $('#content > nav.tabSet').children().removeClass('current');
     $('#content > nav.tabSet > span').remove();
-    $('#content > nav.tabSet').append('<span class="current tab ' + sLowerModule + ' ' + oData.action + ' noLink">' + oData.moduleType + ' #' + oData.id + '</span>');
+    $('#content > nav.tabSet').append('<span class="current tab ' + sLowerController + ' ' + oData.action + ' noLink">' + oData.controllerType + ' #' + oData.id + '</span>');
   }
 
-  $('#moduleOutput').html('      <div id="item">\
-      <h2 class="title">' + oData.itemTitle + '</h2>\
+  $('#controllerOutput').html('      <div id="model">\
+      <h2 class="title">' + oData.modelTitle + '</h2>\
       <div class="tabSet">\
-' + sItemNav + '\
+' + sModelNav + '\
       </div>\
       <div id="page">\
       </div>\
@@ -73,23 +73,23 @@ function buildItem(oData)
 }
 
 /**
- * Update the primary admin navigation based on the specified new module name
+ * Update the primary admin navigation based on the specified new controller name
  *
- * @param {String} sModuleName - The name of the module to display
+ * @param {String} sControllerName - The name of the controller to display
  */
-function updateAdminNav(sModuleName)
+function updateAdminNav(sControllerName)
 {
-  sCurrentModule = sModuleName.toLowerCase();
+  sCurrentController = sControllerName.toLowerCase();
   $('#admin > nav > a').show();
-  $('#admin > nav > .module').hide();
+  $('#admin > nav > .controller').hide();
   $('#content > .tabSet > a').hide();
 
-  if (sCurrentModule)
+  if (sCurrentController)
   {
-    $('#content > .tabSet > span').not('.' + sCurrentModule).remove();
-    $('#admin > nav > a.' + sCurrentModule).hide();
-    $('#admin > nav > .module.' + sCurrentModule).show();
-    $('#content > .tabSet > .' + sCurrentModule).show();
+    $('#content > .tabSet > span').not('.' + sCurrentController).remove();
+    $('#admin > nav > a.' + sCurrentController).hide();
+    $('#admin > nav > .controller.' + sCurrentController).show();
+    $('#content > .tabSet > .' + sCurrentController).show();
   }
 }
 
@@ -97,29 +97,29 @@ function updateAdminNav(sModuleName)
  * Generate and insert data from the specified URL
  *
  * @param {String} sUrl - The URL to generate and insert data from
- * @param {String} sType (optional) - The type of data being inserted (defaults to 'module')
+ * @param {String} sType (optional) - The type of data being inserted (defaults to 'controller')
  * @param {String} sFormData (optional) - The form data to submit
  * @param {Boolean} bHasFiles (optional) - The form data contains files to upload...
  */
 function updateNav(sUrl, sType, sFormData, bHasFiles)
 {
-  if (arguments.length < 2) { sType = 'module'; }
+  if (arguments.length < 2) { sType = 'controller'; }
   if (arguments.length < 3) { sFormData = false; }
   if (arguments.length < 4) { bHasFiles = false; }
 
-  var sUrlModule = urlModule(sUrl);
+  var sUrlController = urlController(sUrl);
 
-  if (sCurrentModule !== sUrlModule)
+  if (sCurrentController !== sUrlController)
   {
-    updateAdminNav(sUrlModule);
-    sType = 'module';
+    updateAdminNav(sUrlController);
+    sType = 'controller';
   }
 
-  var iUrlItemId = urlItemId(sUrl);
-  var sOverlayId = sUrlModule + iUrlItemId + '-' + Math.floor(1000 * Math.random());
+  var iUrlModelId = urlModelId(sUrl);
+  var sOverlayId = sUrlController + iUrlModelId + '-' + Math.floor(1000 * Math.random());
 
-  //if the type is 'item' *and* '#item > #page' exists then use it... otherwise use moduleOutput
-  var sOverlayTarget = sType === 'item' && $('#item > #page').length ? '#item > #page' : '#moduleOutput';
+  //if the type is 'model' *and* '#model > #page' exists then use it... otherwise use controllerOutput
+  var sOverlayTarget = sType === 'model' && $('#model > #page').length ? '#model > #page' : '#controllerOutput';
 
   history.pushState(null, '', sUrl);
   var sUrlJoinCharacter = sUrl.match(/\?/) ? '&' : '?';
@@ -161,7 +161,7 @@ function updateNav(sUrl, sType, sFormData, bHasFiles)
     }
     else if (oData.error)
     {
-      $('#moduleOutput').html(oData.error);
+      $('#controllerOutput').html(oData.error);
     }
     else if (oData.action)
     {
@@ -169,33 +169,33 @@ function updateNav(sUrl, sType, sFormData, bHasFiles)
 
       if (bQuick || (oData.id > 0 && oData.subMenu[oData.action]))
       {
-        sType = 'item';
+        sType = 'model';
 
-        if (bQuick && oData.itemUri && oData.itemUri !== sUrl)
+        if (bQuick && oData.modelUri && oData.modelUri !== sUrl)
         {
-          history.pushState(null, '', oData.itemUri);
+          history.pushState(null, '', oData.modelUri);
         }
       }
 
       switch (sType)
       {
-        case 'item':
+        case 'model':
           if (oData.id)
           {
-            buildItem(oData);
+            buildModel(oData);
           }
 
-          $('#item > #page').empty().html(oData.content);
-          $('#item > .tabSet > a.' + oData.moduleType.toLowerCase() + '.' + oData.action).addClass('current').siblings().removeClass('current');
+          $('#model > #page').empty().html(oData.content);
+          $('#model > .tabSet > a.' + oData.controllerType.toLowerCase() + '.' + oData.action).addClass('current').siblings().removeClass('current');
           break;
 
         default:
-          var sPageTitle = oData.moduleType + ' > ' + oData.action.charAt(0).toUpperCase() + oData.action.slice(1);
+          var sPageTitle = oData.controllerType + ' > ' + oData.action.charAt(0).toUpperCase() + oData.action.slice(1);
           $(document).prop('title', sPageTitle);
 
-          $('#moduleOutput').empty().html(oData.content);
+          $('#controllerOutput').empty().html(oData.content);
           $('#content > .tabSet > span').remove();
-          $('#content > .tabSet > a.' + oData.moduleType.toLowerCase() + '.' + oData.action).addClass('current').siblings().removeClass('current');
+          $('#content > .tabSet > a.' + oData.controllerType.toLowerCase() + '.' + oData.action).addClass('current').siblings().removeClass('current');
       }
     }
   })
@@ -208,9 +208,9 @@ function updateNav(sUrl, sType, sFormData, bHasFiles)
 $(function()
 {
   /**
-   * Handle clicks on the module list with AJAX instead of the default URL
+   * Handle clicks on the controller list with AJAX instead of the default URL
    */
-  $('#admin').on('click', 'nav.moduleList > a', function(e)
+  $('#admin').on('click', 'nav.controllerList > a', function(e)
   {
     updateAdminNav($(this).attr('class'));
     updateNav($(this).attr('href'));
@@ -218,7 +218,7 @@ $(function()
   });
 
   /**
-   * Handle clicks on the current module's tabs with AJAX instead of the default URL
+   * Handle clicks on the current controller's tabs with AJAX instead of the default URL
    */
   $('#content').on('click', 'nav.tabSet > a', function(e)
   {
@@ -227,27 +227,27 @@ $(function()
   });
 
   /**
-   * Handle clicks on the specified URLs in the moduleOutput with AJAX instead of the default URL
+   * Handle clicks on the specified URLs in the controllerOutput with AJAX instead of the default URL
    */
-  $('#moduleOutput').on('click', 'a.module', function(e)
+  $('#controllerOutput').on('click', 'a.controller', function(e)
   {
-    updateNav($(this).attr('href'), 'module');
+    updateNav($(this).attr('href'), 'controller');
     e.preventDefault();
   });
 
   /**
-   * Handle clicks on the specified URLs in the moduleOutput with AJAX instead of the default URL
+   * Handle clicks on the specified URLs in the controllerOutput with AJAX instead of the default URL
    */
-  $('#moduleOutput').on('click', 'a.item', function(e)
+  $('#controllerOutput').on('click', 'a.model', function(e)
   {
-    updateNav($(this).attr('href'), 'item');
+    updateNav($(this).attr('href'), 'model');
     e.preventDefault();
   });
 
   /**
    * Make options that only work if boxes are checked only visible when they are checked
    */
-  $('#moduleOutput').on('click', '.LimboniaSortGridCellCheckbox', function()
+  $('#controllerOutput').on('click', '.LimboniaSortGridCellCheckbox', function()
   {
     var bChecked = $('.LimboniaSortGridCellCheckbox:checked').length > 0;
     $('.LimboniaSortGridDelete').toggle(bChecked);
@@ -257,9 +257,9 @@ $(function()
   /**
    * Handle clicks on the specified URLs in the top header with AJAX instead of the default URL
    */
-  $('body > header').on('click', 'a.item', function(e)
+  $('body > header').on('click', 'a.model', function(e)
   {
-    updateNav($(this).attr('href'), 'item');
+    updateNav($(this).attr('href'), 'model');
     e.preventDefault();
   });
 
@@ -270,7 +270,7 @@ $(function()
   {
     var oForm = $(this).parent();
     var sUri = $(oForm).prop('action');
-    var sType = urlItemId(sUri) > 0 ? 'item' : 'module';
+    var sType = urlModelId(sUri) > 0 ? 'model' : 'controller';
     oFormData = oForm.serialize() + '&No=1';
     updateNav(sUri, sType, oFormData);
     e.preventDefault();
@@ -282,7 +282,7 @@ $(function()
   $('#admin').on('submit', 'form', function(e)
   {
     var sUri = $(this).prop('action');
-    var sType = urlItemId(sUri) > 0 ? 'item' : 'module';
+    var sType = urlModelId(sUri) > 0 ? 'model' : 'controller';
     var oFormData = null;
     var bHasFiles = false;
 

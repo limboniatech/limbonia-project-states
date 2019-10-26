@@ -87,7 +87,7 @@ class Example
   }
 
   /**
-   * The controller constructor
+   * The app constructor
    *
    */
   public function __construct()

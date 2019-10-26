@@ -54,16 +54,16 @@ class Calendar extends \Limbonia\Widget\Window
    * It increments the widget counter and generates a unique (but human readable) name.
    *
    * @param string $sName (optional)
-   * @param \Limbonia\Controller $oController (optional)
+   * @param \Limbonia\App $oApp (optional)
    * @throws Limbonia\Exception\Object
    */
-  public function __construct($sName = null, \Limbonia\Controller $oController = null)
+  public function __construct($sName = null, \Limbonia\App $oApp = null)
   {
     $this->hWindowParam['top'] = 200;
     $this->hWindowParam['left'] = 200;
     $this->hWindowParam['height'] = 195;
     $this->hWindowParam['width'] = 200;
-    parent::__construct($sName, $oController);
+    parent::__construct($sName, $oApp);
     $this->setConfig('Target', $this->sId);
     $this->setURL($this->sWebShareDir . "/calendar.php?Date='+" . $this->sId . "Target.value+'");
   }

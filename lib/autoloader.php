@@ -3,5 +3,5 @@
  * Limbonia autoloader
  */
 
-require 'Controller.php';
-\Limbonia\Controller::registerAutoloader();
+require 'App.php';
+\Limbonia\App::registerAutoloader();

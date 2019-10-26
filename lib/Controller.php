@@ -2,1473 +2,1438 @@
 namespace Limbonia;
 
 /**
- * Limbonia base Controller Class
+ * Limbonia Controller base class
  *
- * The controller
+ * This defines all the basic parts of an Limbonia controller
  *
  * @author Lonnie Blansett <lonnie@limbonia.tech>
  * @package Limbonia
  */
-abstract class Controller
+class Controller
 {
-  const SETTINGS_NAME_ACTIVE_MODULES = 'ActiveModules';
+  use \Limbonia\Traits\DriverList;
+  use \Limbonia\Traits\HasApp;
 
   /**
-   * The config that comes from external sources
-   *
-   * @var array
-   */
-  protected static $hAutoConfig = [];
-
-    /**
-   * The current default Controller
-   *
-   * @var \Limbonia\Controller
-   */
-  protected static $oDefaultController = null;
-
-  /**
-   * @var \DateTime $oBuildDate -
-   */
-  protected static $oBuildDate = null;
-
-  /**
-   * @var string $sBuildVersion -
-   */
-  protected static $sBuildVersion = '0.0.0';
-
-  /**
-   * The format for timestamps
+   * The admin group that this controller belongs to
    *
    * @var string
    */
-  protected static $sTimeStampFormat = "G:i:s M j Y";
+  protected static $sGroup = 'Admin';
 
   /**
-   * List of Limbonia lib directories
+   * List of fields used by controller settings
    *
    * @var array
    */
-  protected static $aLibList = [__DIR__];
+  protected static $hSettingsFields = [];
 
   /**
-   * List of Limbonia lib directories
+   * List of valid HTTP methods
    *
    * @var array
    */
-  protected static $aTemplateDir = [__DIR__ . '/Template'];
-
-  /**
-   * The list of input types that are allowed to be auto generated
-   *
-   * @var array
-   */
-  protected static $aAutoInput = ['get', 'post', 'server'];
-
-  /**
-   * List of currently instantiated modules
-   *
-   * @var array
-   */
-  protected static $hModuleList = [];
-
-  /**
-   * The list of currently available modules
-   *
-   * @var array
-   */
-  protected static $hAvailableModule = null;
-
-  /**
-   * The list of currently active modules
-   *
-   * @var array
-   */
-  protected static $hActiveModule = null;
-
-  /**
-   * The list of modules allowed for the current user
-   *
-   * @var array
-   */
-  protected static $hAllowedModule = null;
-
-  /**
-   * List of controller types that are based on the web controller
-   *
-   * @var array
-   */
-  const WEB_TYPES =
+  protected static $hHttpMethods =
   [
-    'admin',
-    'ajax',
-    'api',
-    'web'
+    'head' => 'search',
+    'get' => 'search',
+    'post' => 'create',
+    'put' => 'edit',
+    'delete' => 'delete',
+    'options' => ''
   ];
 
   /**
-   * All the data that will be used by the templates
+   * A list of the actual controller settings
    *
    * @var array
    */
-  protected $hTemplateData = [];
+  protected $hSettings = [];
 
   /**
-   * @var \Limbonia\Domain - The default domain for this controller instance
-   */
-  protected $oDomain = null;
-
-  /**
-   * List of database objects
-   *
-   * @var array
-   */
-  protected $hDatabaseList = [];
-
-  /**
-   * List of database configuration settings
-   *
-   * @var array
-   */
-  protected $hDatabaseConfig = [];
-
-  /**
-   * List of configured directories
-   *
-   * @var array
-   */
-  protected $hDirectories =
-  [
-    'root' => '',
-    'libs' => []
-  ];
-
-  /**
-   * List of default Item type names and what they should default to
-   *
-   * @var array
-   */
-  protected $hItemTypeDefaults = [];
-
-  protected $aDefaultActiveModules =
-  [
-    'system',
-    'zipcode',
-    'resourcekey',
-    'resourcelock',
-    'role',
-    'user',
-    'auth',
-    'profile'
-  ];
-  /**
-   * List of configuration data
-   *
-   * @var array
-   */
-  protected $hConfig = [];
-
-  /**
-   * The logged in user
-   *
-   * @var \Limbonia\Item\User
-   */
-  protected $oUser = null;
-
-  /**
-   * The type of controller that has been instantiated
-   *
-   * @var string
-   */
-  protected $sType = '';
-
-  /**
-   * Is this controller running in debug mode?
+   * Has this controller been initialized
    *
    * @var boolean
    */
-  protected $bDebug = false;
+  protected $bInit = false;
 
   /**
-   * Hash of rules used to ensure password strength
+   * Have this controller's settings been changed since the last save?
+   *
+   * @var boolean
+   */
+  protected $bChangedSettings = false;
+
+  /**
+   * Lists of columns to ignore when filling view data
    *
    * @var array
    */
-  protected $hPasswordRules =
+  protected $aIgnore =
   [
-    'empty' => false,
-    'charactermin' => 8,
-    'requirespecial' => true,
-    'requirenumber' => true,
-    'charactermax' => 255
+    'edit' => [],
+    'create' => [],
+    'search' => [],
+    'view' => [],
+    'boolean' => []
   ];
 
   /**
-   * This Controller's router, if there is one
+   * List of column names that are allowed to generate "edit" links
+   *
+   * @var array
+   */
+  protected $aEditColumn = [];
+
+  /**
+   * List of column names that should remain static
+   *
+   * @var array
+   */
+  protected $aStaticColumn = ['Name'];
+
+  /**
+   * The default method for this controller
+   *
+   * @var string
+   */
+  protected $sDefaultAction = 'list';
+
+  /**
+   * The current method being used by this controller
+   *
+   * @var string
+   */
+  protected $sCurrentAction = 'list';
+
+  /**
+   * List of components that this controller contains along with their descriptions
+   *
+   * @var array
+   */
+  protected static $hComponent =
+  [
+    'search' => 'This is the ability to search and display data.',
+    'edit' => 'The ability to edit existing data.',
+    'create' => 'The ability to create new data.',
+    'delete' => 'The ability to delete existing data.'
+  ];
+
+  /**
+   * List of controllers this controller depends on to function correctly
+   *
+   * @var array
+   */
+  protected static $aControllerDependencies = [];
+
+  /**
+   * List of menu items that this controller should display
+   *
+   * @var array
+   */
+  protected $hMenuModels =
+  [
+    'list' => 'List',
+    'search' => 'Search',
+    'create' => 'Create'
+  ];
+
+  /**
+   * List of quick search models to display
+   *
+   * @var array
+   */
+  protected $hQuickSearch = [];
+
+  /**
+   * List of sub-menu options
+   *
+   * @var array
+   */
+  protected $hSubMenuModels =
+  [
+    'view' => 'View',
+    'edit' => 'Edit'
+  ];
+
+  /**
+   * List of actions that are allowed to run
+   *
+   * @var array
+   */
+  protected $aAllowedActions = ['search', 'create', 'editcolumn', 'edit', 'list', 'view'];
+
+  /**
+   * A list of components the current user is allowed to use
+   *
+   * @var array
+   */
+  protected $hAllow = [];
+
+  /**
+   * Has the "City / State / Zip" block been output yet?
+   *
+   * @var boolean
+   */
+  protected $bCityStateZipDone = false;
+
+  /**
+   * The API object for this class to use
    *
    * @var \Limbonia\Router
    */
   protected $oRouter = null;
 
   /**
-   * Generate the build data so it can be used in other places
-   */
-  protected static function generateBuildData()
-  {
-    if (\is_null(self::$oBuildDate))
-    {
-      $sVersionFile = __DIR__ . DIRECTORY_SEPARATOR . 'version';
-
-      if (is_file($sVersionFile))
-      {
-        self::$oBuildDate = new \DateTime('@' . filemtime($sVersionFile));
-        self::$sBuildVersion = trim(file_get_contents($sVersionFile));
-      }
-    }
-  }
-
-  /**
-   * Is the CLI running?
-   *
-   * @return boolean
-   */
-  public static function isCLI()
-  {
-    return preg_match("/cli/i", PHP_SAPI);
-  }
-
-  /**
-   * Is this running from the web?
-   *
-   * @return boolean
-   */
-  public static function isWeb()
-  {
-    return !self::isCLI();
-  }
-
-  /**
-   * return the correct EOL for the current environment.
-   *
-   * @return string
-   */
-  public static function eol()
-  {
-    return self::isCLI() ? "\n" : "<br>\n";
-  }
-
-  /**
-   * Return the build date of the current release of Limbonia.
-   *
-   * @param string $sFormat (optional) - Override the default format with this one, if it's is used
-   */
-  public static function buildDate($sFormat = '')
-  {
-    self::generateBuildData();
-    return self::$oBuildDate->format(empty($sFormat) ? 'r' : $sFormat);
-  }
-
-  /**
-   * Set all controllers to use the specified format as the default format for timestamps
-   *
-   * @param string $sNewFormat
-   */
-  public static function setTimeStampFormat($sNewFormat = NULL)
-  {
-    self::$sTimeStampFormat = empty($sNewFormat) ? 'r' : $sNewFormat;
-  }
-
-  /**
-   * Format and return the specified UNIX timestamp using the default format
-   *
-   * @param integer $iTimeStamp
-   * @param string $sFormat (optional) - Override the default format with this one, if it's is used
-   * @return string
-   */
-  public static function formatTime($iTimeStamp, $sFormat = '')
-  {
-    $oTime = new \DateTime('@' . (integer)$iTimeStamp);
-    $sFormat = empty($sFormat) ? self::$sTimeStampFormat : $sFormat;
-    return $oTime->format($sFormat);
-  }
-
-  /**
-   * Generate and return the current time in the default format
-   *
-   * @param string $sFormat (optional) - Override the default format with this one, if it's is used
-   * @return string
-   */
-  public static function timeStamp($sFormat = NULL)
-  {
-    return self::formatTime(time(), $sFormat);
-  }
-
-  /**
-   * Return the version number of the current release of Limbonia.
-   *
-   * @return string
-   */
-  public static function version()
-  {
-    self::generateBuildData();
-    return self::$sBuildVersion;
-  }
-
-  /**
-   * Set the default controller for this PHP instance
-   *
-   * @param Controller $oController
-   */
-  public static function setDefault(self $oController)
-  {
-    self::$oDefaultController = $oController;
-  }
-
-  /**
-   * Return the default controller for this PHP instance
-   *
-   * @return Controller
-   */
-  public static function getDefault()
-  {
-    return self::$oDefaultController;
-  }
-
-  /**
-   * Flatten the specified variable into a string and return it...
-   *
-   * @param mixed $xData
-   * @return string
-   */
-  public static function flatten($xData)
-  {
-    return var_dump($xData, true);
-  }
-
-  /**
-   * PSR-4 compatible autoload method
-   *
-   * @param string $sClassName
-   */
-  public static function autoload($sClassName)
-  {
-    $sClassType = preg_match("#^" . __NAMESPACE__ . "\\\?(.+)#", $sClassName, $aMatch) ? $aMatch[1] : $sClassName;
-    $sClassPath = preg_replace("#[_\\\]#", DIRECTORY_SEPARATOR, $sClassType);
-
-    foreach (self::getLibs() as $sLibDir)
-    {
-      $sClassFile = $sLibDir . DIRECTORY_SEPARATOR . $sClassPath . '.php';
-
-      if (is_file($sClassFile))
-      {
-        require $sClassFile;
-        break;
-      }
-    }
-  }
-
-  /**
-   * Register the PSR-4 autoloader
-   */
-  public static function registerAutoloader()
-  {
-    set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__);
-    spl_autoload_register([__NAMESPACE__ . '\\Controller', 'autoload'], false);
-  }
-
-  /**
-   * Add a new Limbonia library to the current list
-   *
-   * @param string $sLibDir - The root directory to the Limbonia library to add
-   */
-  public static function addLib($sLibDir)
-  {
-    if (is_dir($sLibDir) && !in_array($sLibDir, self::$aLibList))
-    {
-      array_unshift(self::$aLibList, $sLibDir);
-      array_unshift(self::$aTemplateDir, "$sLibDir/Template");
-    }
-  }
-
-  /**
-   * Return the list of Limbonia libraries
+   * Return the list of this controller's components
    *
    * @return array
    */
-  public static function getLibs()
+  public static function getComponents()
   {
-    return self::$aLibList;
+    return static::$hComponent;
   }
 
   /**
-   * Return the list of template directories
+   * Return this controller's admin group
    *
    * @return string
    */
-  public static function templateDirs()
+  public static function getGroup()
   {
-    return self::$aTemplateDir;
+    return static::$sGroup;
   }
 
   /**
-   * Find and return the home directory of the current user
+   * Controller Factory
    *
-   * @return string
-   */
-  public static function getHomeDir()
-  {
-    if (isset($_SERVER['HOME']))
-    {
-      return $_SERVER['HOME'];
-    }
-
-    $sHome = getenv('HOME');
-
-    if (!empty($sHome))
-    {
-      return $sHome;
-    }
-
-    $hUser = posix_getpwuid(posix_getuid());
-    return $hUser['dir'];
-  }
-
-  /**
-   * Merge two arrays recursively and return it
-   *
-   * @param array $hOriginal
-   * @param array $hOverride
-   * @return array
-   */
-  public static function mergeArray(array $hOriginal, array $hOverride)
-  {
-    $hMerge = $hOriginal;
-
-    foreach ($hOverride as $sKey => $xValue)
-    {
-      if (isset($hOriginal[$sKey]))
-      {
-        if (is_array($xValue) && is_array($hOriginal[$sKey]))
-        {
-          $hMerge[$sKey] = self::mergeArray($hOriginal[$sKey], $xValue);
-        }
-        else
-        {
-          $hMerge[$sKey] = $hOverride[$sKey];
-        }
-      }
-      else
-      {
-        $hMerge[$sKey] = $xValue;
-      }
-    }
-
-    return $hMerge;
-  }
-
-  /**
-   * Add a new hash to the default config
-   *
-   * @param array $hNewConfig
-   */
-  public static function addAutoConfig(array $hNewConfig = [])
-  {
-    self::$hAutoConfig = self::mergeArray(self::$hAutoConfig, $hNewConfig);
-  }
-
-  /**
-   * Generate and return a valid, configured controller
-   *
-   * @param array $hConfig
+   * @param string $sType - The type of controller to create
+   * @param \Limbonia\App $oApp
    * @return \Limbonia\Controller
-   * @throws \Exception
    */
-  public static function factory(array $hConfig = [])
+  public static function factory($sType, \Limbonia\App $oApp)
   {
-    if (is_file('/etc/limbonia/config.php'))
-    {
-      require_once '/etc/limbonia/config.php';
-    }
-
-    $sHome = \Limbonia\Controller::getHomeDir();
-    $sConfigFile = "$sHome/.limbonia/config.php";
-
-    if (is_file($sConfigFile))
-    {
-      require_once $sConfigFile;
-    }
-
-    $hConfig = self::mergeArray(self::$hAutoConfig, $hConfig);
-    $hLowerConfig = \array_change_key_case($hConfig, CASE_LOWER);
-    $sControllerType = null;
-
-    if (isset($hLowerConfig['controller_type']))
-    {
-      $sControllerType = strtolower($hLowerConfig['controller_type']);
-      unset($hLowerConfig['controller_type']);
-    }
-
-    if (self::isCLI() || $sControllerType == 'cli')
-    {
-      return new Controller\Cli($hLowerConfig);
-    }
-
-    if (!in_array($sControllerType, self::WEB_TYPES))
-    {
-      $oServer = Input::singleton('server');
-      $sBaseUrl = rtrim(dirname($oServer['php_self']), '/') . '/';
-      $sRawPath = rtrim(preg_replace("#\?.*#", '', preg_replace("#^" . $sBaseUrl . "#",  '', $oServer['request_uri'])), '/');
-      $aCall = explode('/', strtolower($sRawPath));
-      $sControllerType = isset($aCall[0]) && in_array($aCall[0], self::WEB_TYPES) ? $aCall[0] : 'web';
-    }
-
-    $sWebControllerClass = __CLASS__ . '\\' . ucfirst($sControllerType);
-    return new $sWebControllerClass($hLowerConfig);
+    return self::driverFactory($sType, $oApp);
   }
 
   /**
-   * The controller constructor
+   * Generate and return an HTML field, in the default style, using the specified data
    *
-   * NOTE: This constructor should only be used by the factory and *never* directly
-   *
-   * @param array $hConfig - A hash of configuration data
+   * @param string $sContent
+   * @param string $sLabel (optional)
+   * @param string $sFieldId (optional)
+   * @return string
    */
-  protected function __construct(array $hConfig = [])
+  public static function field($sContent, $sLabel = '', $sFieldId = '')
   {
-    if (isset($hConfig['debug']))
-    {
-      $this->bDebug = (boolean)$hConfig['debug'];
-    }
+    $sLabelClass = empty($sLabel) ? 'blankLabel' : 'label';
+    $sId = empty($sFieldId) ? '' : " id=\"{$sFieldId}Field\"";
+    return "<div class=\"field\"$sId><span class=\"$sLabelClass\">$sLabel</span><span class=\"data\">$sContent</span></div>";
+  }
 
-    $this->sType = strtolower(str_replace(__CLASS__ . "\\", '', get_class($this)));
+  /**
+   * Generate and return an HTML field, in the default style, using the specified widget object to generate the content and field id
+   *
+   * @param \Limbonia\Widget $oWiget
+   * @param string $sLabel (optional)
+   * @return string
+   */
+  public static function widgetField(\Limbonia\Widget $oWiget, $sLabel = '')
+  {
+    return self::field($oWiget, $sLabel, $oWiget->getId());
+  }
 
-    if (isset($hConfig['domaindirtemplate']))
-    {
-      Domain::setDirTemplate($hConfig['domaindirtemplate']);
-      unset($hConfig['domaindirtemplate']);
-    }
+  /**
+   * Instantiate a controller
+   *
+   * @param \Limbonia\App $oApp
+   */
+  protected function __construct(\Limbonia\App $oApp, \Limbonia\Router $oRouter = null)
+  {
+    $this->oApp = $oApp;
+    $this->oRouter = is_null($this->oRouter) ? $this->oApp->getRouter() : $oRouter;
+    $this->getType();
 
-    if (isset($hConfig['domain']))
+    if (count(static::$hSettingsFields) > 0)
     {
-      if ($hConfig['domain'] instanceof \Limbonia\Domain)
+      $this->hMenuModels['settings'] = 'Settings';
+      $this->aAllowedActions[] = 'settings';
+      $this->hSettings = $this->oApp->getSettings($this->sType);
+
+      if (empty($this->hSettings))
       {
-        $this->oDomain = $hConfig['domain'];
+        $this->hSettings = $this->defaultSettings();
+        $this->bChangedSettings = true;
+        $this->saveSettings();
       }
-      elseif (is_string($hConfig['domain']))
+    }
+
+    $this->init();
+    $this->sCurrentAction = in_array($this->oRouter->action, $this->aAllowedActions) ? $this->oRouter->action : $this->sDefaultAction;
+  }
+
+  /**
+   * Destructor
+   */
+  public function __destruct()
+  {
+    $this->saveSettings();
+  }
+
+  /**
+   * Activate this controller and any required dependencies then return a list of types that were activated
+   *
+   * @param array $hActiveController - the active controller list
+   * @return array
+   * @throws Exception on failure
+   */
+  public function activate(array $hActiveController)
+  {
+    $aNewActiveController = [$this->getType()];
+
+    if (!empty(static::$aControllerDependencies))
+    {
+      foreach (static::$aControllerDependencies as $sController)
       {
-        $this->oDomain = \Limbonia\Domain::factory($hConfig['domain']);
+        if (!isset($hActiveController[$sController]))
+        {
+          $this->oApp->activateController($sController);
+          $aNewActiveController = array_merge($aNewActiveController, [$sController]);
+        }
       }
-
-      unset($hConfig['domain']);
     }
 
-    $this->hConfig['baseuri'] = $this->oDomain ? $this->oDomain->uri : '';
-    $this->hDirectories['root'] = \dirname(__DIR__);
-
-    if (isset($hConfig['directories']))
-    {
-      foreach ($hConfig['directories'] as $sName => $sDir)
-      {
-        $this->hDirectories[\strtolower($sName)] = $sDir;
-      }
-
-      unset($hConfig['directories']);
-    }
-
-    $sTemplateDir = $this->getDir('template');
-
-    if (is_readable($sTemplateDir) && !in_array($sTemplateDir, self::$aTemplateDir))
-    {
-      array_unshift(self::$aTemplateDir, $sTemplateDir);
-    }
-
-    $sTimeZone = 'UTC';
-
-    if (isset($hConfig['timezone']))
-    {
-      $sTimeZone = $hConfig['timezone'];
-      unset($hConfig['timezone']);
-    }
-
-    date_default_timezone_set($sTimeZone);
-
-    if (isset($hConfig['database']) && count($hConfig['database']) > 0)
-    {
-      foreach ($hConfig['database'] as $sName => $hDatabase)
-      {
-        $this->hDatabaseConfig[\strtolower($sName)] = array_change_key_case($hDatabase, CASE_LOWER);
-      }
-
-      unset($hConfig['database']);
-    }
-
-    if (isset($hConfig['itemtypedefaults']))
-    {
-      $this->hItemTypeDefaults = $hConfig['itemtypedefaults'];
-      unset($hConfig['itemtypedefaults']);
-    }
-
-    if (isset($hConfig['defaultactivemodules']))
-    {
-      $this->aDefaultActiveModules = $hConfig['defaultactivemodules'];
-      unset($hConfig['defaultactivemodules']);
-    }
-
-    if (isset($hConfig['passwordrules']))
-    {
-      $this->hPasswordRules = array_merge($this->hPasswordRules, array_change_key_case($hConfig['passwordrules'], CASE_LOWER));
-      unset($hConfig['passwordrules']);
-    }
-
-    $this->hConfig = array_merge($this->hConfig, $hConfig);
-
-    if (\is_null(self::$oDefaultController))
-    {
-      self::setDefault($this);
-    }
+    $this->setup();
+    return $aNewActiveController;
   }
 
   /**
-   * Magic method used to set the specified property to the specified value
+   * Do whatever setup is needed to make this controller work...
    *
-   * @note Settings should not be changed so this method does nothing...
-   *
-   * @param string $sName
-   * @param mixed $xValue
-   */
-  public function __set($sName, $xValue)
-  {
-    //don't allow public setting of anything
-  }
-
-  /**
-   * Magic method used to generate and return the specified property
-   *
-   * @param string $sName
-   * @return mixed
-   */
-  public function __get($sName)
-  {
-    $sLowerName = strtolower($sName);
-
-    if (in_array($sLowerName, self::$aAutoInput))
-    {
-      return \Limbonia\Input::singleton($sLowerName);
-    }
-
-    if ($sLowerName == 'domain')
-    {
-      return $this->oDomain;
-    }
-
-    if ($sLowerName == 'type')
-    {
-      return $this->sType;
-    }
-
-    if ($sLowerName == 'debug')
-    {
-      return $this->bDebug;
-    }
-
-    if (preg_match("#^(.+?)dir$#", $sLowerName, $aMatch))
-    {
-      return $this->getDir($aMatch[1]);
-    }
-
-    if (isset($this->hConfig[$sLowerName]))
-    {
-      return $this->hConfig[$sLowerName];
-    }
-  }
-
-  /**
-   * Magic method used to determine if the specified property is set
-   *
-   * @param string $sName
-   * @return boolean
-   */
-  public function __isset($sName)
-  {
-    $sLowerName = strtolower($sName);
-
-    if (in_array($sLowerName, self::$aAutoInput))
-    {
-      return true;
-    }
-
-    if ($sLowerName === 'domain')
-    {
-      return !empty($this->oDomain);
-    }
-
-    if ($sLowerName == 'type' || $sLowerName == 'debug')
-    {
-      return true;
-    }
-
-    if (preg_match("#^(.+?)dir$#", $sLowerName))
-    {
-      return true;
-    }
-
-    return isset($this->hConfig[$sLowerName]);
-  }
-
-  /**
-   * Magic method used to remove the specified property
-   *
-   * @note Settings should not be unset so this method does nothing...
-   *
-   * @param string $sName
-   */
-  public function __unset($sName)
-  {
-    //don't allow public unsetting of anything
-  }
-
-  /**
-   * Run basic system setup
+   * @throws Exception on failure
    */
   public function setup()
   {
-    $oDatabase = $this->getDB();
-
-    //create the settings table
-    echo "Initialize Settings: ";
-    $oDatabase->createTable('Settings', "Type VARCHAR(255) NOT NULL,
-Data TEXT NULL,
-PRIMARY KEY(Type)");
-    echo "complete" . static::eol();
-
-    //activate the default modules
-    echo "Initialize Default Modules:" . static::eol();
-
-    foreach ($this->aDefaultActiveModules as $sModule)
-    {
-      try
-      {
-        echo "\t$sModule: ";
-        $this->activateModule($sModule);
-        echo "complete" . static::eol();
-      }
-      catch (Exception $e)
-      {
-        echo $e->getMessage() . static::eol();
-      }
-    }
   }
 
   /**
-   * Generate and return a database object based on the specified database config section
+   * Deactivate this controller then return a list of types that were deactivated
    *
-   * @param string $sSection (optional)
-   * @throws \Limbonia\Exception\Database
-   * @return \Limbonia\Database
+   * @param array $hActiveController - the active controller list
+   * @return array
+   * @throws Exception on failure
    */
-  public function getDB($sSection = 'default')
+  public function deactivate(array $hActiveController)
   {
-    if (empty($this->hDatabaseConfig))
-    {
-      throw new Exception\Database("Database not configured");
-    }
-
-    if (empty($sSection) || !isset($this->hDatabaseConfig[$sSection]))
-    {
-      $sSection = 'default';
-    }
-
-    if (!isset($this->hDatabaseList[$sSection]))
-    {
-      if (!isset($this->hDatabaseConfig[$sSection]))
-      {
-        throw new Exception\Database("Database default not configured");
-      }
-
-      $this->hDatabaseList[$sSection] = Database::factory($this->hDatabaseConfig[$sSection], $this);
-    }
-
-    return $this->hDatabaseList[$sSection];
+    return [$this->getType()];
   }
 
   /**
-   * Return the Domain object that is associated with this Controller, if there is one
-   *
-   * @return \Limbonia\Domain
+   * Initialize this controller's custom data, if there is any
    */
-  public function getDomain()
+  protected function init()
   {
-    return $this->oDomain;
   }
 
   /**
-   * Get the specified directory via several different means
+   * Remove any ignored fields of the specified type from the specified data then return it
    *
-   * @param string $sDirName
-   * @return string
+   * @param string $sIgnoreType
+   * @param array $hData
+   * @return array
    */
-  public function getDir($sDirName)
+  protected function removeIgnoredFields($sIgnoreType, $hData)
   {
-    $sDirName = \strtolower($sDirName);
-
-    //Check to see if it's specifiacally configured
-    if (isset($this->hDirectories[$sDirName]))
+    if (empty($this->aIgnore[$sIgnoreType]))
     {
-      return $this->hDirectories[$sDirName];
+      return $hData;
     }
 
-    //Check to see if it exists in the configured "Custom" directory
-    if (isset($this->hDirectories['custom']))
+    foreach ($this->aIgnore[$sIgnoreType] as $sField)
     {
-      if (is_dir($this->hDirectories['custom'] . DIRECTORY_SEPARATOR . $sDirName))
+      if (isset($hData[$sField]))
       {
-        return $this->hDirectories['custom'] . DIRECTORY_SEPARATOR . $sDirName;
+        unset($hData[$sField]);
       }
     }
 
-    //Check to see if it exists relative to the current path
-    $sTemp = realpath($sDirName);
+    return $hData;
+  }
 
-    if ($sTemp)
+  /**
+   * Perform the base "GET" code then return null on success
+   *
+   * @return null
+   * @throws \Exception
+   */
+  protected function processApiHead()
+  {
+    throw new \Limbonia\Exception\Web("Action not implemented by " . $this->getType(), null, 404);
+  }
+
+  /**
+   * Perform and return the default "GET" code
+   *
+   * @return array
+   * @throws \Exception
+   */
+  protected function processApiGet()
+  {
+    throw new \Limbonia\Exception\Web("Action not implemented by " . $this->getType(), null, 404);
+  }
+
+  /**
+   * Run the default "PUT" code and return the updated data
+   *
+   * @return array
+   * @throws \Exception
+   */
+  protected function processApiPut()
+  {
+    throw new \Limbonia\Exception\Web("Action not implemented by " . $this->getType(), null, 404);
+  }
+
+  /**
+   * Run the default "POST" code and return the created data
+   *
+   * @return array
+   * @throws \Exception
+   */
+  protected function processApiPost()
+  {
+    throw new \Limbonia\Exception\Web("Action not implemented by " . $this->getType(), null, 404);
+  }
+
+  /**
+   * Run the default "DELETE" code and return true
+   *
+   * @return boolean - True on success
+   * @throws \Exception
+   */
+  protected function processApiDelete()
+  {
+    throw new \Limbonia\Exception\Web("Action not implemented by " . $this->getType(), null, 404);
+  }
+
+  /**
+   * Is the current user valid?
+   *
+   * @return boolean
+   */
+  protected function validUser()
+  {
+    $oUser = $this->oApp->user();
+
+    if ($oUser instanceof \Limbonia\Model\User)
     {
-      return $sTemp;
+      return $oUser->id > 0;
     }
 
-    //is this the temp directory
-    if ($sDirName == 'temp')
+    return false;
+  }
+
+  /**
+   * Process the current API call and return the appropriate data
+   *
+   * @return mixed
+   * @throws \Exception
+   */
+  public function processApi()
+  {
+    http_response_code(200);
+
+    if (!$this->validUser())
     {
-      return '/tmp';
+      throw new \Limbonia\Exception\Web('Authentication required', null, 401);
     }
 
-    //if all else fails then use the current directory
-    return '';
+    if (!in_array($this->oRouter->method, array_keys(static::$hHttpMethods)))
+    {
+      throw new \Limbonia\Exception\Web("HTTP method ({$this->oRouter->method}) not allowed", null, 405);
+    }
+
+    if (!empty(static::$hHttpMethods[$this->oRouter->method]) && !$this->allow(static::$hHttpMethods[$this->oRouter->method]))
+    {
+      throw new \Limbonia\Exception\Web("Action not allowed to user", null, 405);
+    }
+
+    switch ($this->oRouter->method)
+    {
+      case 'head':
+        return $this->processApiHead();
+
+      case 'get':
+        return $this->processApiGet();
+
+      case 'put':
+        return $this->processApiPut();
+
+      case 'post':
+        http_response_code(201);
+        return $this->processApiPost();
+
+      case 'delete':
+        http_response_code(204);
+        return $this->processApiDelete();
+
+      case 'options':
+        $sMethods = implode(',', array_keys(static::$hHttpMethods));
+        header('Allow: ' . strtoupper($sMethods));
+        return null;
+    }
+
+    throw new \Limbonia\Exception\Web("HTTP method ({$this->oRouter->method}) not recognized", null, 405);
+  }
+
+  /**
+   * Is this controller currently performing a search?
+   *
+   * @return boolean
+   */
+  public function isSearch()
+  {
+    return in_array($this->oRouter->action, ['search', 'list']);
+  }
+
+  /**
+   * Return the list of fields used by this controller's settings
+   *
+   * @return array
+   */
+  public function getSettingsFields()
+  {
+    return static::$hSettingsFields;
+  }
+
+  /**
+   * Should the specified component type be allowed to be used by the current user of this controller?
+   *
+   * @param string $sComponent
+   * @return boolean
+   */
+  public function allow($sComponent)
+  {
+    if (!isset($this->hAllow[$sComponent]))
+    {
+      $this->hAllow[$sComponent] = $this->oApp->user()->hasResource($this->sType, $this->getComponent($sComponent));
+    }
+
+    return $this->hAllow[$sComponent];
+  }
+
+  public function getHttpMethods()
+  {
+    return static::$hHttpMethods;
   }
 
   /**
    * Generate and return the URI for the specified parameters
    *
-   * @param string ...$aParam (optional)
+   * @param string ...$aParam (optional) - List of parameters to place in the URI
    * @return string
    */
   public function generateUri(string ...$aParam): string
   {
-    $aUri = array_merge([$this->baseUri], $aParam);
-    return strtolower(implode('/', $aUri));
+    array_unshift($aParam, $this->sType);
+    return $this->oApp->generateUri(...$aParam);
   }
 
   /**
-   * Save the specified settings for the specified type to the database
+   * Process the posted settings for this controller ad save them
    *
-   * @param string $sType
-   * @param array $hSettings
-   * @return boolean - True on success or false on failure
+   * @throws Exception
    */
-  public function saveSettings($sType, array $hSettings = [])
+  protected function prepareViewPostSettings()
   {
-    $oStatement = $this->getDB()->prepare('INSERT INTO Settings (Type, Data) VALUES (:Type, :Data) ON DUPLICATE KEY UPDATE Data = :Data');
-    return $oStatement->execute
-    ([
-      ':Type' => $sType,
-      ':Data' => addslashes(serialize($hSettings))
-    ]);
-  }
-
-  /**
-   * Return settings of the specified type
-   *
-   * @param string $sType
-   * @return array
-   * @throws \Exception
-   */
-  public function getSettings($sType)
-  {
-    $oStatement = $this->getDB()->prepare('SELECT Data FROM Settings WHERE Type = :Type LIMIT 1');
-    $oStatement->bindParam(':Type', $sType);
-
-    if (!$oStatement->execute())
+    if (!isset($this->oApp->post[$this->sType]))
     {
-      $aError = $oStatement->errorInfo();
-      throw new \Exception("Failed to get settings for $sType: " . $aError[2]);
+      throw new Exception('Nothing to save!');
     }
 
-    $sSettings = $oStatement->fetchColumn();
-    return empty($sSettings) ? [] : unserialize(stripslashes($sSettings));
+    foreach ($this->oApp->post[$this->sType] as $sKey => $sData)
+    {
+      $this->setSetting($sKey, $sData);
+    }
+
+    $this->saveSettings();
   }
 
   /**
-   * Return the default for the specified type
-   *
-   * @param string $sType
-   * @return striing
+   * Prepare the view for display based on the current action and current method
    */
-  public function defaultItemType($sType)
+  public function prepareView()
   {
-    $sLowerType = strtolower($sType);
-    return isset($this->hItemTypeDefaults[$sLowerType]) ? $this->hItemTypeDefaults[$sLowerType] : $sType;
+    $sOriginalAction = $this->sCurrentAction;
+    $this->oApp->viewData('controller', $this);
+    $this->oApp->viewData('method', $this->sCurrentAction);
+    $aMethods = [];
+    $aMethods[] = 'prepareView' . ucfirst($this->sCurrentAction) . ucfirst($this->oRouter->subAction);
+    $aMethods[] = 'prepareView' . ucfirst($this->sCurrentAction);
+    $aMethods[] = 'prepareView' . ucfirst($this->oRouter->method) . ucfirst($this->sCurrentAction) . ucfirst($this->oRouter->subAction);
+    $aMethods[] = 'prepareView' . ucfirst($this->oRouter->method) . ucfirst($this->sCurrentAction);
+    $aMethods = array_unique($aMethods);
+
+    foreach ($aMethods as $sMethod)
+    {
+      //run every view method can be found
+      if (method_exists($this, $sMethod))
+      {
+        $this->$sMethod();
+      }
+    }
+
+    //If the current action has been modified from the original action
+    if ($sOriginalAction !== $this->sCurrentAction)
+    {
+      //then prepare the views for the new action too
+      $this->prepareView();
+    }
   }
 
   /**
-   * Add the specified data to the template under the specified name
+   * Generate and return the path of the view to display
+   *
+   * @return boolean|string
+   */
+  public function getView()
+  {
+    if (!$this->allow($this->sCurrentAction))
+    {
+      return false;
+    }
+
+    $sControllerDir = strtolower($this->getType());
+    $sActionView = $this->sCurrentAction == 'list' ? 'search' : strtolower("{$this->sCurrentAction}");
+    $sMethod = $this->oRouter->method == 'post' || $this->sCurrentAction == 'list' ? 'process' : 'display';
+    $aViews =
+    [
+      $sControllerDir . '/' . $sActionView,
+      $sControllerDir . '/' . $sMethod . $sActionView,
+      $sActionView,
+      $sMethod . $sActionView,
+    ];
+
+    foreach ($aViews as $sViewName)
+    {
+      $sViewFile = $this->oApp->viewFile($sViewName);
+
+      if (empty($sViewFile))
+      {
+        continue;
+      }
+
+      return preg_match("/\.php$/", $sViewFile) ? $sViewFile : preg_replace("#^.*/views/#", '', $sViewFile);
+    }
+
+    throw new \Exception("The action \"{$this->sCurrentAction}\" does *not* exist in {$this->sType}!!!");
+  }
+
+  /**
+   * Return an array of data that is needed to display the controller's admin output
+   *
+   * @return array
+   */
+  public function getAdminOutput()
+  {
+    return
+    [
+      'controllerType' => $this->getType(),
+      'action' => $this->getCurrentAction()
+    ];
+  }
+
+  /**
+   * Return the list of static columns, if there are any
+   *
+   * @return array
+   */
+  protected function getStaticColumn()
+  {
+    return is_array($this->aStaticColumn) ? $this->aStaticColumn : [];
+  }
+
+  /**
+   * Return the default settings
+   *
+   * @return array
+   */
+  protected function defaultSettings()
+  {
+    return [];
+  }
+
+  /**
+   * Save the current settings, if any to the database
+   *
+   * @return boolean - True on success or false on failure
+   */
+  protected function saveSettings()
+  {
+    if (!$this->bChangedSettings)
+    {
+      return true;
+    }
+
+    if ($this->oApp->saveSettings($this->sType, $this->hSettings))
+    {
+      $this->bChangedSettings = false;
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Return the specified setting, if it exists
+   *
+   * @param string $sName
+   * @return mixed
+   */
+  public function getSetting($sName=null)
+  {
+    if (count($this->hSettings) == 0)
+    {
+      return null;
+    }
+
+    if (empty($sName))
+    {
+      return $this->hSettings;
+    }
+
+    return $this->hSettings[strtolower($sName)] ?? null;
+  }
+
+  /**
+   * Set the specified setting to the specified value
    *
    * @param string $sName
    * @param mixed $xValue
+   * @return boolean
    */
-  public function templateData($sName, $xValue)
+  protected function setSetting($sName, $xValue)
   {
-    $this->hTemplateData[$sName] = $xValue;
-  }
+    $sLowerName = strtolower($sName);
 
-  /**
-   * Render and return specified template
-   *
-   * @param string $sTemplateName
-   * @return string The rendered template
-   */
-  public function templateRender($sTemplateName)
-  {
-    $sTemplateFile = $this->templateFile($sTemplateName);
-
-    if (empty($sTemplateFile))
+    if (!isset(static::$hSettingsFields[$sLowerName]))
     {
-      return '';
+      return false;
     }
 
-    ob_start();
-    $this->templateInclude($sTemplateFile);
-    return ob_get_clean();
+    $this->bChangedSettings = true;
+    $this->hSettings[$sLowerName] = $xValue;
+    return true;
   }
 
   /**
-   * Return the full file path of the specified template, if it exists
+   * Return an array of height and width for a popup based on the specified name, if there is one
    *
-   * @param string $sTemplateName
+   * @param string $sName
+   * @return array
+   */
+  public function getPopupSize($sName)
+  {
+    return isset($this->hPopupSize[$sName]) ? $this->hPopupSize[$sName] : $this->hPopupSize['default'];
+  }
+
+  /**
+   * Return a valid component name from the specified menu item
+   *
+   * @param string $sMenuModel
    * @return string
    */
-  public function templateFile($sTemplateName)
+  protected function getComponent($sMenuModel)
   {
-    if (empty($sTemplateName))
+    if ($sMenuModel == 'list')
     {
-      return '';
+      return 'search';
     }
 
-    if (is_readable($sTemplateName) && !is_dir($sTemplateName))
+    if ($sMenuModel == 'editcolumn')
     {
-      return $sTemplateName;
+      return 'edit';
     }
 
-    foreach (self::templateDirs() as $sLib)
+    return $sMenuModel;
+  }
+
+  /**
+   * Return this controller's list of menu items
+   *
+   * @return array
+   */
+  public function getMenuModels()
+  {
+    return $this->hMenuModels;
+  }
+
+  /**
+   * Return this controller's list of quick search models
+   *
+   * @return array
+   */
+  public function getQuickSearch()
+  {
+    return $this->hQuickSearch;
+  }
+
+  /**
+   * Return this controller's list of sub-menu items
+   *
+   * @param boolean $bOnlyUserAllowed (optional) - Should the returned array only contain models that the current user has access to?
+   * @return array
+   */
+  public function getSubMenuModels($bOnlyUserAllowed = false)
+  {
+    if ($bOnlyUserAllowed)
     {
-      $sFilePath = $sLib . '/' . $this->sType . '/' .$sTemplateName;
+      $hSubMenuModels = [];
 
-      if (is_readable($sFilePath) && !is_dir($sFilePath))
+      foreach ($this->hSubMenuModels as $sMenuAction => $sMenuTitle)
       {
-        return $sFilePath;
+        if ($this->allow($sMenuAction))
+        {
+          $hSubMenuModels[$sMenuAction] = $sMenuTitle;
+        }
       }
 
-      if (is_readable("$sFilePath.php"))
+      return $hSubMenuModels;
+    }
+
+    return $this->hSubMenuModels;
+  }
+
+  /**
+   * Generate and return the title for this controller
+   *
+   * @return string
+   */
+  public function getTitle()
+  {
+    return ucwords(trim(preg_replace("/(([a-z])[A-Z])/", "$1 $2", str_replace("_", " ", $this->sType))));
+  }
+
+  /**
+   * Return the current action
+   *
+   * @return string
+   */
+  public function getCurrentAction()
+  {
+    return $this->sCurrentAction;
+  }
+
+  /**
+   * Prepare the search term array
+   *
+   * @param array $hArray
+   * @param string $sKey
+   * @return boolean
+   */
+  protected function processSearchTerm(&$hArray, $sKey)
+  {
+    if (empty($hArray[$sKey]))
+    {
+      unset($hArray[$sKey]);
+      return true;
+    }
+  }
+
+  /**
+   * Process a whole array of search terms
+   *
+   * @param array $hArray
+   * @return array
+   */
+  protected function processSearchTerms($hArray)
+  {
+    if (is_array($hArray))
+    {
+      foreach (array_keys($hArray) as $sKey)
       {
-        return "$sFilePath.php";
+        $this->processSearchTerm($hArray, $sKey);
+      }
+    }
+
+    return $hArray;
+  }
+
+  /**
+   * Generate and return the column headers for the "Search" process
+   *
+   * @param array $hArray
+   * @param string $sKey
+   */
+  protected function processSearchColumnHeader(array &$hArray, $sKey)
+  {
+    $hArray[$sKey] = preg_replace("/^.*?\./", "", $hArray[$sKey]);
+  }
+
+  /**
+   * Generate the search results table headers in the specified grid object
+   *
+   * @param \Limbonia\Widget\Table $oSortGrid
+   * @param string $sColumn
+   */
+  public function processSearchGridHeader(\Limbonia\Widget\Table $oSortGrid, $sColumn)
+  {
+    //any columns that need to be static can be set in the aStaticColumn array...
+    if (in_array($sColumn, $this->getStaticColumn()) || !$this->allow('Edit'))
+    {
+      $oSortGrid->addCell(\Limbonia\Widget\Table::generateSortHeader($sColumn), false);
+    }
+    else
+    {
+      $sDisplay = \Limbonia\Widget\Table::generateSortHeader($this->getColumnTitle($sColumn));
+
+      if (in_array($sColumn, $this->aEditColumn))
+      {
+        $sDisplay .= "<span class=\"LimboniaSortGridEdit\" onClick=\"document.getElementById('Limbonia_SortGrid_Edit').value='$sColumn'; document.getElementById('EditColumn').submit();\">[Edit]</span>";
       }
 
-      if (is_readable("$sFilePath.html"))
+      $oSortGrid->addCell($sDisplay);
+    }
+  }
+
+  /**
+   * Generate and return the HTML needed to control the row specified by the id
+   *
+   * @param string $sIDColumn
+   * @param integer $iID
+   * @return string
+   */
+  public function processSearchGridRowControl($sIDColumn, $iID)
+  {
+    $sURL = $this->generateUri((string)$iID);
+    return "<input type=\"checkbox\" class=\"LimboniaSortGridCellCheckbox\" name=\"{$sIDColumn}[$iID]\" id=\"{$sIDColumn}[$iID]\" value=\"1\"> [<a class=\"model\" href=\"$sURL\">View</a>]";
+  }
+
+  /**
+   * Return the controller criteria
+   *
+   * @return array
+   */
+  protected function processSearchGetCriteria()
+  {
+    //unless overridden by a descendant form data will allways take precendence over URL data
+    return isset($this->oApp->post[$this->sType]) ? $this->oApp->post[$this->sType] : (isset($this->oApp->get[$this->sType]) ? $this->oApp->get[$this->sType] : []);
+  }
+
+  /**
+   * Generate and return the HTML for the specified form field based on the specified information
+   *
+   * @param string $sName
+   * @param string $sValue
+   * @param array $hData
+   * @return string
+   */
+  public function getFormField($sName, $sValue = null, $hData = [])
+  {
+    $sLabel = preg_replace("/([a-z])([A-Z])/", "$1 $2", $sName);
+
+    if (is_null($sValue) && isset($hData['Default']) && !$this->isSearch())
+    {
+      $sValue = $hData['Default'];
+    }
+
+    if ($sName == 'State' || $sName == 'City' || $sName == 'Zip')
+    {
+      if ($this->bCityStateZipDone)
       {
-        return "$sFilePath.html";
+        if ($sName == 'State' && !empty($sValue))
+        {
+          return "<script type=\"text/javascript\" language=\"javascript\">setState('$sValue');</script>\n";
+        }
+
+        if ($sName == 'City' && !empty($sValue))
+        {
+          return "<script type=\"text/javascript\" language=\"javascript\">setCity('$sValue');</script>\n";
+        }
+
+        if ($sName == 'Zip' && !empty($sValue))
+        {
+          return "<script type=\"text/javascript\" language=\"javascript\">setZip('$sValue');</script>\n";
+        }
+
+        return null;
       }
+
+      $oStates = $this->oApp->widgetFactory('States', "$this->sType[State]");
+      $sStatesID = $oStates->getId();
+
+      $oCities = $this->oApp->widgetFactory('Select', "$this->sType[City]");
+      $sCitiesID = $oCities->getId();
+
+      $oZips = $this->oApp->widgetFactory('Select', "$this->sType[Zip]");
+      $sZipID = $oZips->getId();
+
+      $sGetCities = $oStates->addAjaxFunction('getCitiesByState', true);
+      $sGetZips = $oStates->addAjaxFunction('getZipsByCity', true);
+
+      $sStateScript = "var stateSelect = document.getElementById('$sStatesID');\n";
+      $sStateScript .= "var stateName = '';\n";
+      $sStateScript .= "var cityName = '';\n";
+      $sStateScript .= "function setState(state)\n";
+      $sStateScript .= "{\n";
+      $sStateScript .= "  stateName = state;\n";
+      $sStateScript .= "  stateSelect.value = state;\n";
+      $sStateScript .= '  ' . $sGetCities . "(state, '$sCitiesID', cityName);\n";
+      $sStateScript .= "}\n";
+
+      if ($sName == 'State')
+      {
+        $sStateScript .= "setState('" . $sValue . "');\n";
+      }
+
+      $oStates->writeJavascript($sStateScript);
+
+      $sCityScript = "var citySelect = document.getElementById('$sCitiesID');\n";
+      $sCityScript .= "var zipNum = '';\n";
+      $sCityScript .= "function setCity(city)\n";
+      $sCityScript .= "{\n";
+      $sCityScript .= "  cityName = city;\n";
+      $sCityScript .= "  if (citySelect.options.length > 1)\n";
+      $sCityScript .= "  {\n";
+      $sCityScript .= "    for (i = 0; i < citySelect.options.length; i++)\n";
+      $sCityScript .= "    {\n";
+      $sCityScript .= "      if (citySelect.options[i].value == city)\n";
+      $sCityScript .= "      {\n";
+      $sCityScript .= "        citySelect.options[i].selected = true;\n";
+      $sCityScript .= "        break;\n";
+      $sCityScript .= "      }\n";
+      $sCityScript .= "    }\n";
+      $sCityScript .= "  }\n";
+      $sCityScript .= "  else\n";
+      $sCityScript .= "  {\n";
+      $sCityScript .= '    ' . $sGetCities . "(stateName, '$sCitiesID', city);\n";
+      $sCityScript .= "  }\n";
+      $sCityScript .= "  citySelect.options[1] = new Option(city, city, true);\n";
+      $sCityScript .= '  ' . $sGetZips . "(cityName, stateName, '$sZipID', zipNum);\n";
+      $sCityScript .= "}\n";
+
+      if ($sName == 'City')
+      {
+        $sCityScript .= "setCity('" . $sValue . "');\n";
+      }
+
+      $oCities->writeJavascript($sCityScript);
+
+      $sZipScript = "var zipSelect = document.getElementById('$sZipID');\n";
+      $sZipScript .= "function setZip(zip)\n";
+      $sZipScript .= "{\n";
+      $sZipScript .= "  zipNum = zip;\n";
+      $sZipScript .= "  if (zipSelect.options.length > 1)\n";
+      $sZipScript .= "  {\n";
+      $sZipScript .= "    for (i = 0; i < zipSelect.options.length; i++)\n";
+      $sZipScript .= "    {\n";
+      $sZipScript .= "      if (zipSelect.options[i].value == zip)\n";
+      $sZipScript .= "      {\n";
+      $sZipScript .= "        zipSelect.options[i].selected = true;\n";
+      $sZipScript .= "        break;\n";
+      $sZipScript .= "      }\n";
+      $sZipScript .= "    }\n";
+      $sZipScript .= "  }\n";
+      $sZipScript .= "  else\n";
+      $sZipScript .= "  {\n";
+      $sZipScript .= "  zipSelect.options[1] = new Option(zip, zip, true);\n";
+      $sZipScript .= '    ' . $sGetZips . "(cityName, stateName, '$sZipID', zipNum);\n";
+      $sZipScript .= "  }\n";
+      $sZipScript .= "}\n";
+
+      if ($sName == 'Zip')
+      {
+        $sZipScript .= "setZip('" . $sValue . "');\n";
+      }
+
+      $oZips->writeJavascript($sZipScript);
+
+      $oStates->addEvent('change', $sGetCities."(this.options[this.selectedIndex].value, '$sCitiesID', cityName)");
+
+      $sFormField = self::widgetField($oStates, 'State');
+
+      $oCities->addOption('Select a city', '0');
+      $oCities->addEvent('change', $sGetZips."(this.options[this.selectedIndex].value, stateSelect.options[stateSelect.selectedIndex].value, '$sZipID', zipNum)");
+
+      $sFormField .= self::widgetField($oCities, 'City');
+
+      $oZips->addOption('Select a zip', '0');
+
+      $sFormField .= self::widgetField($oZips, 'Zip');
+
+      $this->bCityStateZipDone = true;
+      return $sFormField;
+    }
+
+    if ($sName == 'UserID')
+    {
+      $oUsers = Model::search('User', ['Visible' => true, 'Active' => true]);
+      $oSelect = $this->oApp->widgetFactory('Select', "$this->sType[UserID]");
+      $sEmptyModelLabel = $this->isSearch() ? 'None' : 'Select a user';
+      $oSelect->addOption($sEmptyModelLabel, '');
+
+      foreach ($oUsers as $hUser)
+      {
+        $oSelect->addOption($hUser['Name'], $hUser['ID']);
+      }
+
+      $oSelect->setSelected($sValue);
+      return self::widgetField($oSelect, 'User');
+    }
+
+    if ($sName == 'KeyID')
+    {
+      $oSelect = $this->oApp->widgetFactory('Select', "$this->sType[KeyID]");
+      $sEmptyModelLabel = $this->isSearch() ? 'None' : 'Select a resource name';
+      $oSelect->addOption($sEmptyModelLabel, '');
+      $oKeys = Model::search('ResourceKey', null, 'Name');
+
+      foreach ($oKeys as $hKey)
+      {
+        if ($sValue == $hKey['KeyID'])
+        {
+          $oSelect->setSelected($hKey['KeyID']);
+        }
+
+        $oSelect->addOption($hKey['Name'], $hKey['KeyID']);
+      }
+
+      return self::widgetField($oSelect, 'Required Key');
+    }
+
+    if (preg_match('/(.+?)id$/i', $sName, $aMatch))
+    {
+      try
+      {
+        $oTest = Model::factory($aMatch[1]);
+
+        if (isset($oTest->name))
+        {
+          $oList = Model::search($aMatch[1]);
+
+          $oSelect = $this->oApp->widgetFactory('Select', "$this->sType[$sName]");
+          $sEmptyModelLabel = $this->isSearch() ? 'None' : "Select {$aMatch[1]}";
+          $oSelect->addOption($sEmptyModelLabel, '');
+
+          foreach ($oList as $oTempModel)
+          {
+            $oSelect->addOption($oTempModel->name, $oTempModel->id);
+          }
+
+          if (!empty($sValue))
+          {
+            $oSelect->setSelected($sValue);
+          }
+
+          return self::widgetField($oSelect, $aMatch[1]);
+        }
+      }
+      catch (\Exception $e)
+      {
+      }
+    }
+
+    if ($sName == 'FileName')
+    {
+      $oFile = $this->oApp->widgetFactory('Input', "$this->sType[FileName]");
+      $oFile->setParam('type', 'file');
+      return self::widgetField($oSelect, 'File Name');
+    }
+
+    $sType = strtolower(preg_replace("/( |\().*/", "", $hData['Type']));
+
+    switch ($sType)
+    {
+      case 'hidden':
+        $oHidden = \Limbonia\Tag::factory('input');
+        $oHidden->setParam('type', 'hidden');
+        $oHidden->setParam('name', "$this->sType[$sName]");
+        $oHidden->setParam('id', $this->sType . $sName);
+        $oHidden->setParam('value', $sValue);
+        return $oHidden->__toString();
+
+      case 'enum':
+        $sElements = preg_replace("/enum\((.*?)\)/", "$1", $hData['Type']);
+        $sElements = str_replace("'", '"', $sElements);
+        $sElements = str_replace('""', "'", $sElements);
+        $sElements = str_replace('"', '', $sElements);
+        $aElements = explode(",", $sElements);
+        $aTitle = array_map('ucwords', $aElements);
+        $hElements = array_combine($aElements, $aTitle);
+        return $this->getFormField($sName, $sValue, ['Type' => 'hash', 'Extra' => $hElements]);
+
+      case 'hash':
+        $oSelect = $this->oApp->widgetFactory('select', "$this->sType[$sName]");
+
+        if ($this->isSearch() || (isset($hData['Multiple']) && true == $hData['Multiple']))
+        {
+          $oSelect->isMultiple(true);
+        }
+        else
+        {
+          $oSelect->addOption("Select $sLabel", '');
+        }
+
+        if (is_array($hData['Extra']))
+        {
+          $oSelect->addArray($hData['Extra']);
+        }
+
+        if (!empty($sValue))
+        {
+          $oSelect->setSelected($sValue);
+        }
+
+        return self::widgetField($oSelect, $sLabel);
+
+      case 'text':
+      case 'mediumtext':
+      case 'longtext':
+      case 'textarea':
+        $oText = $this->oApp->widgetFactory('Editor', "$this->sType[$sName]");
+        $oText->setToolBar('Basic');
+        $oText->setText($sValue);
+        return self::widgetField($oText, $sLabel);
+
+      case 'radio':
+        $sFormField = '';
+
+        foreach ($hData as $sKey => $sButtonValue)
+        {
+          if (preg_match("/^Value/", $sKey))
+          {
+            $sChecked = ($sButtonValue == $sValue ? ' checked' : null);
+            $sFormField .= "$sButtonValue:  <input type=\"radio\" name=\"$this->sType[$sName]\" id=\"$this->sType$sName\"value=\"$sButtonValue\"$sChecked><br />";
+          }
+        }
+
+        return self::field($sFormField, $sLabel);
+
+      case 'float':
+      case 'int':
+      case 'varchar':
+      case 'char':
+        return self::field("<input type=\"text\" name=\"$this->sType[$sName]\" id=\"$this->sType$sName\" value=\"" . htmlentities($sValue) . "\">", $sLabel, "$this->sType$sName");
+
+      case 'timestamp':
+      case 'date':
+      case 'searchdate':
+        $sSearchDate = $sType == 'searchdate' ? "<select name=\"$this->sType[{$sName}Operator]\"><option> < </option><option selected> = </option><option> > </option></select>\n" : '';
+        $oDate = $this->oApp->widgetFactory('Calendar', "$this->sType[$sName]");
+        $oDate->button('Change');
+
+        if (!empty($sValue))
+        {
+          $oDate->setStartDate($sValue);
+        }
+
+        return self::field("$sSearchDate$oDate", $sLabel, $oDate->getId());
+
+      case 'password':
+        return self::field("<input type=\"password\" name=\"$this->sType[$sName]\" id=\"$this->sType$sName\" value=\"$sValue\">", $sLabel, "$this->sType{$sName}") .
+        self::field("<input type=\"password\" name=\"$this->sType[{$sName}2]\" id=\"$this->sType{$sName}2\" value=\"$sValue\">", $sLabel . '<br>(double check)', "$this->sType{$sName}2");
+
+      case 'swing':
+        return null;
+
+      case 'boolean':
+      case 'tinyint':
+        $sChecked = $sValue ? ' checked="checked"' : '';
+        return self::field("<input type=\"checkbox\" name=\"$this->sType[$sName]\" id=\"$this->sType$sName\" value=\"1\"$sChecked>", $sLabel, "$this->sType$sName");
+
+      default:
+        return self::field("$sName :: $sType", 'Not valid');
     }
 
     return '';
   }
 
   /**
-   * Find then include the specified template if it's found
+   * Generate and return the HTML for the specified form field based on the specified information
    *
-   * @param srtring $sTemplateName
+   * @param string $sName
+   * @param string $sValue
+   * @param array $hData
+   * @return string
    */
-  protected function templateInclude($sTemplateName)
+  public function getField($sName, $sValue = null, $hData = [])
   {
-    $sTemplateFile = $this->templateFile($sTemplateName);
+    $sLabel = $this->getColumnTitle($sName);
 
-    if ($sTemplateFile)
+    if (preg_match('/(.+?)id$/i', $sName, $aMatch) && Model::driver($aMatch[1]))
     {
-      extract($this->hTemplateData);
-      include $sTemplateFile;
-    }
-  }
-
-  /**
-   * Generate and return an empty item object based on the specified table.
-   *
-   * @param string $sType
-   * @return \Limbonia\Item
-   */
-  public function itemFactory($sType): \Limbonia\Item
-  {
-    $oItem = Item::factory($this->defaultItemType($sType), $this->getDB());
-    $oItem->setController($this);
-    return $oItem;
-  }
-
-  /**
-   * Generate and return an item object filled with data from the specified table id
-   *
-   * @param string $sType
-   * @param integer $iItem
-   * @throws \Limbonia\Exception\Database
-   * @return \Limbonia\Item
-   */
-  public function itemFromId($sType, $iItem): \Limbonia\Item
-  {
-    $oItem = Item::fromId($this->defaultItemType($sType), $iItem, $this->getDB());
-    $oItem->setController($this);
-    return $oItem;
-  }
-
-  /**
-   * Generate and return an item object filled with data from the specified array
-   *
-   * @param string $sType
-   * @param array $hItem
-   * @return \Limbonia\Item
-   * @throws \Limbonia\Exception\Object
-   */
-  public function itemFromArray($sType, $hItem): \Limbonia\Item
-  {
-    $oItem = Item::fromArray($this->defaultItemType($sType), $hItem, $this->getDB());
-    $oItem->setController($this);
-    return $oItem;
-  }
-
-  /**
-   * Generate an item list based on the specified type and SQL query
-   *
-   * @param string $sType
-   * @param string $sQuery
-   * @return \Limbonia\ItemList
-   */
-  public function itemList($sType, $sQuery): \Limbonia\ItemList
-  {
-    $oList = Item::getList($this->defaultItemType($sType), $sQuery, $this->getDB());
-    $oList->setController($this);
-    return $oList;
-  }
-
-  /**
-   * Generate an item list based on the specified type and search criteria
-   *
-   * @param string $sType
-   * @param array $hWhere
-   * @param mixed $xOrder
-   * @return \Limbonia\ItemList
-   */
-  public function itemSearch($sType, $hWhere = null, $xOrder = null)
-  {
-    $oList = Item::search($this->defaultItemType($sType), $hWhere, $xOrder, $this->getDB());
-    $oList->setController($this);
-    return $oList;
-  }
-
-  /**
-   * Generate and return an empty item object based on the specified table.
-   *
-   * @param string $sType
-   * @param string $sName (optional) - The name to give the widget when it is instantiated
-   * @return \Limbonia\Widget - The requested \Limbonia\Widget on success, otherwise FALSE.
-   */
-  public function widgetFactory($sType, $sName = null)
-  {
-    return Widget::factory($sType, $sName, $this);
-  }
-
-  /**
-   * Generate and return the module of the specified type
-   *
-   * @param string $sType
-   * @return \Limbonia\Module
-   */
-  public function moduleFactory($sType)
-  {
-    $sDriver = Module::driver($sType);
-
-    if (!isset(self::$hModuleList[$sDriver]))
-    {
-      self::$hModuleList[$sDriver] = Module::factory($sType, $this);
-    }
-
-    return self::$hModuleList[$sDriver];
-  }
-
-  /**
-   * Generate and return a Report object of the specified type
-   *
-   * @param string $sType
-   * @param array $hParam (optional)
-   * @return \Limbonia\Report
-   */
-  public function reportFactory($sType, array $hParam = []): \Limbonia\Report
-  {
-    return \Limbonia\Report::factory($sType, $hParam, $this);
-  }
-
-  /**
-   * Generate a report, run it then return the result
-   *
-   * @param string $sType The type of report to get a result from
-   * @param array $hParam (optional) List of report parameters to set before running the report
-   * @return \Limbonia\Interfaces\Result
-   * @throws \Limbonia\Exception\Object
-   */
-  public function reportResultFactory($sType, array $hParam = [])
-  {
-    return \Limbonia\Report::resultFactory($sType, $hParam, $this);
-  }
-
-  /**
-   * Return the default router
-   *
-   * @return \Limbonia\Router
-   */
-  public function getRouter()
-  {
-    if (empty($this->oRouter))
-    {
-      $this->oRouter = \Limbonia\Router::singleton();
-    }
-
-    return $this->oRouter;
-  }
-
-  /**
-   * Return the list of all available modules
-   *
-   * @return array
-   */
-  public function availableModules()
-  {
-    if (is_null(self::$hAvailableModule))
-    {
-      $hDriverList = \Limbonia\Module::driverList();
-      $aBlackList = $this->moduleBlackList ?? [];
-
-      foreach ($hDriverList as $sDriver)
+      try
       {
-        if (in_array($sDriver, $aBlackList))
-        {
-          continue;
-        }
-
-        self::$hAvailableModule[strtolower($sDriver)] = $sDriver;
+        $oModel = $this->oApp->modelFromId($aMatch[1], $sValue);
+        return self::field($oModel->name, $sLabel, $this->sType . $sName);
       }
-
-      ksort(self::$hAvailableModule);
-      reset(self::$hAvailableModule);
-    }
-
-    return self::$hAvailableModule;
-  }
-
-  /**
-   * Return the list of all active modules
-   *
-   * @return array
-   */
-  public function activeModules()
-  {
-    if (is_null(self::$hActiveModule))
-    {
-      self::$hActiveModule = $this->getSettings(self::SETTINGS_NAME_ACTIVE_MODULES);
-    }
-
-    return self::$hActiveModule;
-  }
-
-  /**
-   * Activate the specified module
-   *
-   * @param string $sModule the name of the module to activate
-   * @throws Exception
-   */
-  public function activateModule($sModule)
-  {
-    if (empty($sModule))
-    {
-      throw new Exception("Module driver not specified");
-    }
-
-    $sDriver = Module::driver($sModule);
-
-    if (empty($sDriver))
-    {
-      throw new Exception("Module driver not found: $sModule");
-    }
-
-    $sLowerDriver = strtolower($sDriver);
-    $hActiveModule = $this->activeModules();
-
-    //if this module type is already one of the active modules
-    if (isset($hActiveModule[$sLowerDriver]))
-    {
-      //then fail
-      throw new Exception("That module is already active");
-    }
-
-    $oModule = $this->moduleFactory($sDriver);
-
-    foreach ($oModule->activate($hActiveModule) as $sActivedDriver)
-    {
-      self::$hActiveModule[strtolower($sActivedDriver)] = $sActivedDriver;
-    }
-
-    if (!$this->saveSettings(self::SETTINGS_NAME_ACTIVE_MODULES, self::$hActiveModule))
-    {
-      throw new Exception("Failed to save new active module list");
-    }
-  }
-
-  /**
-   * Deactivate the specified module
-   *
-   * @param string $sModule the name of the module to deactivate
-   * @throws Exception
-   */
-  public function deactivateModule($sModule)
-  {
-    if (empty($sModule))
-    {
-      throw new Exception("Module driver not specified");
-    }
-
-    $sDriver = Module::driver($sModule);
-
-    if (empty($sDriver))
-    {
-      throw new Exception("Module driver not found: $sModule");
-    }
-
-    $sLowerDriver = strtolower($sDriver);
-    $hActiveModule = $this->activeModules();
-
-    //if this module type is not one of the active modules
-    if (!isset($hActiveModule[$sLowerDriver]))
-    {
-      //then fail
-      throw new Exception("The $sDriver module is already inactive");
-    }
-
-    $oModule = $this->moduleFactory($sDriver);
-
-    foreach ($oModule->deactivate($hActiveModule) as $sDeactivedDriver)
-    {
-      unset(self::$hActiveModule[strtolower($sDeactivedDriver)]);
-    }
-
-    if (!$this->saveSettings(self::SETTINGS_NAME_ACTIVE_MODULES, self::$hActiveModule))
-    {
-      throw new Exception("Failed to save new active module list");
-    }
-  }
-
-  /**
-   * The list of all modules the current user is allowed to access
-   *
-   * @return array
-   */
-  public function allowedModules()
-  {
-    if (is_null(self::$hAllowedModule))
-    {
-      $hDriverList = \Limbonia\Module::driverList();
-
-      foreach ($hDriverList as $sDriver)
+      catch (\Exception $e)
       {
-        if (!$this->oUser->hasResource($sDriver))
-        {
-          continue;
-        }
-
-        self::$hAllowedModule[strtolower($sDriver)] = $sDriver;
-      }
-
-      ksort(self::$hAllowedModule);
-      reset(self::$hAllowedModule);
-    }
-
-    return self::$hAllowedModule;
-  }
-
-  /**
-   * Make sure the specified password follows all the current guidelines
-   *
-   * @todo Create method for adding / controlling the password guidelines with config and scripting options
-   *
-   * @param string $sPassword
-   * @throws \Exception
-   */
-  public function validatePassword($sPassword)
-  {
-    $aPasswordProblems = [];
-
-    if (!empty($this->hPasswordRules))
-    {
-      foreach ($this->hPasswordRules as $sRule => $xValue)
-      {
-        switch ($sRule)
-        {
-          case 'empty':
-            if (!(boolean)$xValue)
-            {
-              if (empty($sPassword))
-              {
-                $aPasswordProblems[] = 'Password may not be empty';
-              }
-            }
-            break;
-
-          case 'requirenumber':
-            if ((boolean)$xValue)
-            {
-              if (!preg_match("/[0-9]/", $sPassword))
-              {
-                $aPasswordProblems[] = 'Password requires at least 1 number';
-              }
-            }
-
-            break;
-
-          case 'requirespecial':
-            if ((boolean)$xValue)
-            {
-              if (!preg_match("/[\!\@\#\$\%\^\&\*\(\)\-\=\_\+\[\]\\\`\{\}\|\~\;\'\:\"\,\.\/\<\>\?]/", $sPassword))
-              {
-                $aPasswordProblems[] = 'Password requires at least 1 special character';
-              }
-            }
-            break;
-
-          case 'requireupper':
-            if ((boolean)$xValue)
-            {
-              if (!preg_match("/[A-Z]/", $sPassword))
-              {
-                $aPasswordProblems[] = 'Password requires at least 1 uppercase character';
-              }
-            }
-            break;
-
-          case 'requirelower':
-            if ((boolean)$xValue)
-            {
-              if (!preg_match("/[a-z]/", $sPassword))
-              {
-                $aPasswordProblems[] = 'Password requires at least 1 lowercase character';
-              }
-            }
-            break;
-
-          case 'charactermin':
-            $iMin = (int)$xValue;
-            $iCharCount = strlen($sPassword);
-
-            if ($iCharCount < $iMin)
-            {
-              $aPasswordProblems[] = "Password is only $iCharCount characters long but must be at least $iMin characters long";
-            }
-
-            break;
-
-          case 'charactermax':
-            $iMax = (int)$xValue;
-            $iCharCount = strlen($sPassword);
-
-            if (isset($this->hPasswordRules['charactermin']))
-            {
-              $iMin = (int)$this->hPasswordRules['charactermin'];
-
-              if ($iMax < $iMin)
-              {
-                $iMax = $iMin;
-              }
-            }
-
-            $oUser = $this->itemFactory('user');
-            $hPasswordColumn = $oUser->getColumn('password');
-
-            if (preg_match("/varchar\((\d+)\)/", $hPasswordColumn['Type'], $aMatch))
-            {
-              $iDatabaseMax = (int)$aMatch[1];
-
-              if ($iMax > $iDatabaseMax)
-              {
-                $iMax = $iDatabaseMax;
-              }
-            }
-
-            if ($iCharCount > $iMax)
-            {
-              $aPasswordProblems[] = "Password is $iCharCount characters long but can not be more than $iMax characters long";
-            }
-
-            break;
-        }
+        return self::field('None<!-- ' . $e->getMessage() . ' -->', $sLabel, $this->sType . $sName);
       }
     }
 
-    if (!empty($aPasswordProblems))
+    $sType = strtolower(preg_replace("/( |\().*/", "", $hData['Type']));
+
+    switch ($sType)
     {
-      throw new Exception('The password contains the following problems: ' . static::eol() . implode(static::eol(), $aPasswordProblems) . static::eol());
+      case 'hidden':
+        $oHidden = \Limbonia\Tag::factory('input');
+        $oHidden->setParam('type', 'hidden');
+        $oHidden->setParam('name', "$this->sType[$sName]");
+        $oHidden->setParam('id', $this->sType . $sName);
+        $oHidden->setParam('value', $sValue);
+        return $oHidden->__toString();
+
+      case 'password':
+      case 'swing':
+        return '';
+
+      case 'tinyint':
+        $sValue = (boolean)(integer)$sValue ? 'Yes' : 'No';
     }
+
+    return self::field($sValue, $sLabel, $this->sType . $sName);
   }
 
   /**
-   * Return the user represented by the specified email, if there is one
+   * Generate and return the column title from the specified column name
    *
-   * @param string $sEmail
-   * @return \Limbonia\Item\User
+   * @param string $sColumn
+   * @return string
    */
-  public function userByEmail($sEmail)
+  public function getColumnTitle($sColumn)
   {
-    $oUser = \Limbonia\Item\User::getByEmail($sEmail, $this->getDB());
-    $oUser->setController($this);
-    return $oUser;
+    //if this is an ID column and there is a driver for it
+    if (preg_match("/^(.+?)ID$/", $sColumn, $aMatch) && Model::driver($aMatch[1]))
+    {
+      //then use the match otherwise use the original column
+      $sColumn = $aMatch[1];
+    }
+
+    return preg_replace("/([a-z])([A-Z])/", "$1 $2", $sColumn);
   }
 
   /**
-   * Return a default admin User object
+   * Generate and return the value of the specified column
    *
-   * @return \Limbonia\Item\User
+   * @param \Limbonia\Model $oModel
+   * @param string $sColumn
+   * @return mixed
    */
-  public function userAdmin()
+  public function getColumnValue(Model $oModel, $sColumn)
   {
-    $oUser = \Limbonia\Item\User::getAdmin();
-    $oUser->setController($this);
-    return $oUser;
+    if (preg_match("/(^.*?)id$/i", $sColumn, $aMatch))
+    {
+      try
+      {
+        $sType = $aMatch[1];
+
+        if ($oModel->__isset($sType))
+        {
+          $oColumnModel = $oModel->__get($sType);
+
+          if ($oColumnModel instanceof Model && $oColumnModel->__isset('name'))
+          {
+            return $oColumnModel->id == 0 ? 'None' : $oColumnModel->name;
+          }
+        }
+      }
+      catch (\Exception $e) { }
+    }
+
+    return $oModel->__get($sColumn);
   }
 
   /**
-   * Return the currently logged in user
+   * Generate and return the HTML for all the specified form fields
    *
-   * @return \Limbonia\Item\User
+   * @param array $hFields - List of the fields to generate HTML for
+   * @param array $hValues (optional) - List of field data, if there is any
+   * @return string
    */
-  public function user()
+  public function getFormFields($hFields, $hValues = [])
   {
-    return $this->oUser;
+    if (!is_array($hFields))
+    {
+      return '';
+    }
+
+    $sFormFields = '';
+
+    foreach ($hFields as $sName => $hData)
+    {
+      $sValue = $hValues[$sName] ?? null;
+      $sFormFields .= $this->getFormField($sName, $sValue, $hData);
+    }
+
+    return $sFormFields;
   }
 
   /**
-   * Generate and return the current user
+   * Generate and return the HTML for all the specified form fields
    *
-   * @return \Limbonia\Item\User
-   * @throws \Exception
+   * @param array $hFields - List of the fields to generate HTML for
+   * @param array $hValues (optional) - List of field data, if there is any
+   * @return string
    */
-  protected function generateUser()
+  public function getFields($hFields, $hValues = [])
   {
-    return $this->userAdmin();
+    if (!is_array($hFields))
+    {
+      return '';
+    }
+
+    $sFields = '';
+
+    foreach ($hFields as $sName => $hData)
+    {
+      $sValue = $hValues[$sName] ?? null;
+      $sFields .= $this->getField($sName, $sValue, $hData);
+    }
+
+    return $sFields;
   }
 
   /**
-   * Run everything needed to react to input and display data in the way this controller is intended
+   * Echo the form generated by the specified data
+   *
+   * @param string $sType
+   * @param array $hFields
+   * @param array $hValues
    */
-  public function run()
+  public function getForm($sType, $hFields, $hValues = [])
   {
-    $this->oUser = $this->generateUser();
+    if (strtolower($sType) == 'edit')
+    {
+      $sButton = "<input type=\"submit\" name=\"Update\" value=\"Update\">&nbsp;&nbsp;&nbsp;&nbsp;<input type=\"button\" name=\"No\" value=\"No\" onclick=\"parent.location='" . $this->generateUri($this->oModel->id) . "'\">";
+    }
+    else
+    {
+      $sButtonValue = ucwords($sType);
+      $sButton = "<button type=\"submit\">$sButtonValue</button>";
+    }
+
+    $sType = preg_replace('/ /', '', $sType);
+    return "<form name=\"$sType\" action=\"" . $this->generateUri($sType) . "\" method=\"post\">
+" . $this->getFormFields($hFields, $hValues) . "
+<div class=\"field\"><span class=\"blankLabel\"></span><span>$sButton</span></div>
+</form>\n";
+  }
+
+  /**
+   * Return the HTML needed to display the specified edit dialog box
+   *
+   * @param type $sText
+   * @param type $sButtonName
+   * @return string
+   */
+  protected function editDialog($sText, $sButtonName)
+  {
+    $sVerb = isset($_SESSION['EditData']['Delete']) ? 'Delete' : 'Edit Column';
+    $sContent = "<form id=\"EditColumn\" name=\"EditColumn\" action=\"" . $this->generateUri('editcolumn') . "\" method=\"post\">\n";
+    $sContent .= $sText;
+    $sContent .= "<button type=\"submit\" name=\"$sButtonName\">Yes</button>&nbsp;&nbsp;&nbsp;&nbsp;<button id=\"No\" name=\"No\">No</button>";
+    $sContent .= "</form>\n";
+    return \Limbonia\App\Admin::getMenu($sContent, $this->getTitle() . " :: $sVerb");
   }
 }

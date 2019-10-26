@@ -18,7 +18,7 @@ class Widget implements \Limbonia\Interfaces\Tag
   }
 
   use \Limbonia\Traits\DriverList;
-  use \Limbonia\Traits\HasController;
+  use \Limbonia\Traits\HasApp;
 
   /**
    * @var integer $iCount - number of existing widgets.
@@ -100,25 +100,25 @@ class Widget implements \Limbonia\Interfaces\Tag
   protected $sWebShareDir = '';
 
   /**
-   * Will this widget inject any thing into the HTML head via its controller
+   * Will this widget inject any thing into the HTML head via its app
    *
    * @TODO Either implement this feature fully or remove its unneeded detritus, like this variable...
    *
    * @var boolean
    */
-  protected $bUseControllerHtmlHeader = false;
+  protected $bUseAppHtmlHeader = false;
 
   /**
    * Factory method that creates an instance of a specific type of widget.
    *
    * @param string $sType - The type of widget to instantiate
    * @param string $sName (optional) - The name to give the widget when it is instantiated
-   * @param \Limbonia\Controller $oController (optional)
+   * @param \Limbonia\App $oApp (optional)
    * @return \Limbonia\Widget - The object requested on success, otherwise false.
    */
-  public static function factory($sType, $sName = null, \Limbonia\Controller $oController = null)
+  public static function factory($sType, $sName = null, \Limbonia\App $oApp = null)
   {
-    return self::driverFactory($sType, $sName, $oController);
+    return self::driverFactory($sType, $sName, $oApp);
   }
 
     /**
@@ -218,15 +218,15 @@ class Widget implements \Limbonia\Interfaces\Tag
    * It increments the widget counter and generates a unique (but human readable) name.
    *
    * @param string $sName (optional)
-   * @param \Limbonia\Controller $oController (optional)
+   * @param \Limbonia\App $oApp (optional)
    * @throws Limbonia\Exception\Object
    */
-  public function __construct($sName=null, \Limbonia\Controller $oController = null)
+  public function __construct($sName=null, \Limbonia\App $oApp = null)
   {
     $this->getType();
-    $this->setController($oController);
+    $this->setApp($oApp);
 
-    $this->sWebShareDir = $this->getController()->domain->uri . '/' . $this->getController()->getDir('share');
+    $this->sWebShareDir = $this->getApp()->domain->uri . '/' . $this->getApp()->getDir('share');
     self::$iCount++;
     $this->sName = empty($sName) ? 'Limbonia' . $this->sType . self::widgetCount() : $sName;
     $this->setParam('name', $this->sName);
@@ -235,18 +235,18 @@ class Widget implements \Limbonia\Interfaces\Tag
   }
 
   /**
-   * Set this object's controller
+   * Set this object's app
    *
-   * @param \Limbonia\Controller $oController
+   * @param \Limbonia\App $oApp
    */
-  public function setController($oController)
+  public function setApp($oApp)
   {
-    if ($oController instanceof \Limbonia\Controller)
+    if ($oApp instanceof \Limbonia\App)
     {
-      $this->oController = $oController;
+      $this->oApp = $oApp;
     }
 
-    if ($this->oController instanceof \Limbonia\Controller\Web)
+    if ($this->oApp instanceof \Limbonia\App\Web)
     {
       /**
        * @todo If it's a web type then allow scripts to be placed in the head instead of the body?
@@ -302,14 +302,14 @@ class Widget implements \Limbonia\Interfaces\Tag
             break;
 
           case 'POST':
-            $sValue = $this->getController()->post[$sName];
+            $sValue = $this->getApp()->post[$sName];
             break;
 
           case 'GET':
-            $sValue = $this->getController()->get[$sName];
+            $sValue = $this->getApp()->get[$sName];
             break;
 
-          case 'MODULE':
+          case 'controller':
             if (isset($this->$sName))
             {
               $sValue = $this->$sName;
@@ -328,7 +328,7 @@ class Widget implements \Limbonia\Interfaces\Tag
   /**
    * Cache the specified data to the current session
    *
-   * @todo This was imported from "Module" and needs to be worked on before it is usable
+   * @todo This was imported from "Controller" and needs to be worked on before it is usable
    *
    * @param string $sName
    * @param mixed $xData
@@ -341,7 +341,7 @@ class Widget implements \Limbonia\Interfaces\Tag
   /**
    * Return the specified data stored in the current session
    *
-   * @todo This was imported from "Module" and needs to be worked on before it is usable
+   * @todo This was imported from "Controller" and needs to be worked on before it is usable
    *
    * @param type $sName
    * @return type
@@ -601,10 +601,10 @@ class Widget implements \Limbonia\Interfaces\Tag
     if (!in_array($sAjaxFunction, self::$aAjaxFunction))
     {
       $sClassName = str_replace('\\', '/', preg_replace("#^Limbonia\\\#", '', get_class($this)));
-//      self::includeScript($this->getController()->domain->uri . '/' . $this->getController()->getDir('share') . "/ajax.js");
+//      self::includeScript($this->getApp()->domain->uri . '/' . $this->getApp()->getDir('share') . "/ajax.js");
       $sReportStatus = $bReportStatus === true ? 'true' : 'false';
       $sDebug = self::$bAjaxDebug === true ? 'true' : 'false';
-      $sBaseUrl = "'" . $this->getController()->domain->url . '/ajax' ."'";
+      $sBaseUrl = "'" . $this->getApp()->domain->url . '/ajax' ."'";
 
       $sJavascript =  "\n<script type=\"text/javascript\">function $sAjaxFunction(){Limbonia_HttpRequest('$sClassName', '$sFunction', arguments, $sReportStatus, $sDebug, $sBaseUrl);}</script>\n";
       $this->write($sJavascript);

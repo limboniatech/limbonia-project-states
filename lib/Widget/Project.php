@@ -17,15 +17,15 @@ class Project extends \Limbonia\Widget\Select
    * It increments the widget counter and generates a unique (but human readable) name.
    *
    * @param string $sName (optional)
-   * @param \Limbonia\Controller $oController (optional)
+   * @param \Limbonia\App $oApp (optional)
    * @throws Limbonia\Exception\Object
    */
-  public function __construct($sName = null, \Limbonia\Controller $oController = null)
+  public function __construct($sName = null, \Limbonia\App $oApp = null)
   {
-    parent::__construct($sName, $oController);
+    parent::__construct($sName, $oApp);
     $this->sType = 'select';
     $this->addOption('Select a Project', '0');
-    $oProjectList = \Limbonia\Item\Project::getProjectList($this->getController());
+    $oProjectList = \Limbonia\Model\Project::getProjectList($this->getApp());
 
     foreach ($oProjectList as $oProject)
     {
@@ -49,7 +49,7 @@ class Project extends \Limbonia\Widget\Select
 
     if ($iProject != '0' && !empty($iProject))
     {
-      $oProject = $this->getController()->itemFromId('project', $iProject);
+      $oProject = $this->getApp()->modelFromId('project', $iProject);
       $oReleaseList = $oProject->getReleaseList('active');
 
       foreach ($oReleaseList as $iKey => $oRelease)
@@ -83,7 +83,7 @@ class Project extends \Limbonia\Widget\Select
 
     if ($iProject != '0' && !empty($iProject))
     {
-      $oProject = $this->getController()->itemFromId('project', $iProject);
+      $oProject = $this->getApp()->modelFromId('project', $iProject);
       $oElementList = $oProject->getCategoryList();
 
       foreach ($oElementList as $iKey => $oElement)

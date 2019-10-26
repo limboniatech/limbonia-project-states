@@ -1,15 +1,15 @@
 <?php
-namespace Limbonia\Item;
+namespace Limbonia\Model;
 
 /**
- * Limbonia User Item Class
+ * Limbonia User Model Class
  *
- * Item based wrapper around the User table
+ * Model based wrapper around the User table
  *
  * @author Lonnie Blansett <lonnie@limbonia.tech>
  * @package Limbonia
  */
-class User extends \Limbonia\Item
+class User extends \Limbonia\Model
 {
   /**
    * The default password length
@@ -27,7 +27,7 @@ class User extends \Limbonia\Item
   const PASSWORD_ENCRYPTION_ALGO = PASSWORD_BCRYPT;
 
   /**
-   * The database schema for creating this item's table in the database
+   * The database schema for creating this model's table in the database
    *
    * @var string
    */
@@ -54,7 +54,7 @@ PRIMARY KEY (UserID),
 UNIQUE INDEX Unique_Email (Email)";
 
   /**
-   * The columns for this item's tables
+   * The columns for this model's tables
    *
    * @var array
    */
@@ -162,7 +162,7 @@ UNIQUE INDEX Unique_Email (Email)";
   ];
 
   /**
-   * The aliases for this item's columns
+   * The aliases for this model's columns
    *
    * @var array
    */
@@ -191,7 +191,7 @@ UNIQUE INDEX Unique_Email (Email)";
   ];
 
   /**
-   * The default data used for "blank" or "empty" items
+   * The default data used for "blank" or "empty" models
    *
    * @var array
    */
@@ -295,7 +295,7 @@ UNIQUE INDEX Unique_Email (Email)";
    *
    * @param string $sEmail
    * @param \Limbonia\Database $oDatabase (optional)
-   * @return \Limbonia\Item\User User object on success or false on failure
+   * @return \Limbonia\Model\User User object on success or false on failure
    */
   public static function getByEmail($sEmail, \Limbonia\Database $oDatabase = null)
   {
@@ -319,12 +319,12 @@ UNIQUE INDEX Unique_Email (Email)";
    *
    * @param string $sAuthToken
    * @param \Limbonia\Database $oDatabase (optional)
-   * @return \Limbonia\Item\User
+   * @return \Limbonia\Model\User
    * @throws \Limbonia\Exception\Web
    */
   public static function getByAuthToken($sAuthToken, \Limbonia\Database $oDatabase = null)
   {
-    $oDatabase = $oDatabase instanceof \Limbonia\Database ? $oDatabase : \Limbonia\Controller::getDefault()->getDB();
+    $oDatabase = $oDatabase instanceof \Limbonia\Database ? $oDatabase : \Limbonia\App::getDefault()->getDB();
     $oDatabase->query("DELETE FROM UserAuth WHERE TIMEDIFF(NOW(), LastUseTime) > '01:00:00'");
     $oResult = $oDatabase->query("SELECT * FROM UserAuth WHERE AuthToken = :AuthToken AND TIMEDIFF(NOW(), LastUseTime) < '00:20:00'", ['AuthToken' => $sAuthToken]);
     $hRow = $oResult->fetchOne();
@@ -334,7 +334,7 @@ UNIQUE INDEX Unique_Email (Email)";
       throw new \Limbonia\Exception\Web('Authentication failed', null, 401);
     }
 
-    $oUser = \Limbonia\Item::fromId('User', $hRow['UserID'], $oDatabase);
+    $oUser = \Limbonia\Model::fromId('User', $hRow['UserID'], $oDatabase);
 
     if (!$oUser->active)
     {
@@ -350,12 +350,12 @@ UNIQUE INDEX Unique_Email (Email)";
    *
    * @param string $sApiKey
    * @param \Limbonia\Database $oDatabase (optional)
-   * @return \Limbonia\Item\User
+   * @return \Limbonia\Model\User
    * @throws \Limbonia\Exception\Web
    */
   public static function getByApiKey($sApiKey, \Limbonia\Database $oDatabase = null)
   {
-    $oDatabase = $oDatabase instanceof \Limbonia\Database ? $oDatabase : \Limbonia\Controller::getDefault()->getDB();
+    $oDatabase = $oDatabase instanceof \Limbonia\Database ? $oDatabase : \Limbonia\App::getDefault()->getDB();
     $oUserList = parent::search('User', ['ApiKey' => $sApiKey], null, $oDatabase);
 
     if (count($oUserList) == 0)
@@ -549,7 +549,7 @@ UNIQUE INDEX Unique_Email (Email)";
   /**
    * Return the list of resource key objects
    *
-   * @return \Limbonia\ItemList
+   * @return \Limbonia\ModelList
    */
   public function getRoleList()
   {
@@ -640,7 +640,7 @@ UNIQUE INDEX Unique_Email (Email)";
   /**
    * Return the list of open tickets owned by this user
    *
-   * @return \Limbonia\ItemList
+   * @return \Limbonia\ModelList
    */
   public function getTickets()
   {
@@ -671,7 +671,7 @@ UNIQUE INDEX Unique_Email (Email)";
       return true;
     }
 
-    $oResult = $this->getController()->getDB()->prepare("SELECT COUNT(1) FROM Ticket WHERE TicketID = :TicketID AND (OwnerID = $this->id OR CreatorID = $this->id)");
+    $oResult = $this->getApp()->getDB()->prepare("SELECT COUNT(1) FROM Ticket WHERE TicketID = :TicketID AND (OwnerID = $this->id OR CreatorID = $this->id)");
     $oResult->bindValue(':TicketID', $iTicket, \PDO::PARAM_INT);
 
     if (!$oResult->execute())

@@ -1,18 +1,18 @@
 <?php
-namespace Limbonia\Item;
+namespace Limbonia\Model;
 
 /**
- * Limbonia Role Item Class
+ * Limbonia Role Model Class
  *
- * Item based wrapper around the Role table
+ * Model based wrapper around the Role table
  *
  * @author Lonnie Blansett <lonnie@limbonia.tech>
  * @package Limbonia
  */
-class Role extends \Limbonia\Item
+class Role extends \Limbonia\Model
 {
   /**
-   * The database schema for creating this item's table in the database
+   * The database schema for creating this model's table in the database
    *
    * @var string
    */
@@ -23,7 +23,7 @@ PRIMARY KEY (`RoleID`),
 UNIQUE KEY `Unique_RoleName` (`Name`)";
 
   /**
-   * The columns for this item's tables
+   * The columns for this model's tables
    *
    * @var array
    */
@@ -50,7 +50,7 @@ UNIQUE KEY `Unique_RoleName` (`Name`)";
   ];
 
   /**
-   * The aliases for this item's columns
+   * The aliases for this model's columns
    *
    * @var array
    */
@@ -63,7 +63,7 @@ UNIQUE KEY `Unique_RoleName` (`Name`)";
   ];
 
   /**
-   * The default data used for "blank" or "empty" items
+   * The default data used for "blank" or "empty" models
    *
    * @var array
    */
@@ -205,7 +205,7 @@ UNIQUE KEY `Unique_RoleName` (`Name`)";
   /**
    * Return the list of resource key objects
    *
-   * @return \Limbonia\ItemList
+   * @return \Limbonia\ModelList
    */
   public function getResourceList()
   {
