@@ -71,7 +71,7 @@ trait ModelController
 
     if ($this->oModel->id > 0)
     {
-      $this->hMenuModels['model'] = 'Model';
+      $this->hMenuItems['model'] = 'Model';
       $this->aAllowedActions[] = 'model';
     }
   }
@@ -564,7 +564,7 @@ trait ModelController
       if (isset($this->oRouter->ajax))
       {
         $this->oModel = $oData[0];
-        $this->hMenuModels['model'] = 'Model';
+        $this->hMenuItems['model'] = 'Model';
         $this->aAllowedActions[] = 'model';
         $this->sCurrentAction = 'view';
         return true;
@@ -611,7 +611,7 @@ trait ModelController
       return array_merge(parent::getAdminOutput(),
       [
         'modelTitle' => $this->getCurrentModelTitle(),
-        'subMenu' => $this->getSubMenuModels(true),
+        'subMenu' => $this->getSubMenuItems(true),
         'id' => $this->oModel->id,
         'modelUri' => $this->generateUri($this->oModel->id)
       ]);
@@ -897,6 +897,7 @@ trait ModelController
    * Return the appropriate data for the current edit
    *
    * @return array
+   * @throws \Limbonia\Exception
    */
   protected function editGetData()
   {
@@ -904,7 +905,7 @@ trait ModelController
 
     if (empty($hPost))
     {
-      throw new \Exception('No POST data found');
+      throw new \Limbonia\Exception('No POST data found');
     }
 
     $hTemp = $this->oModel->getColumns();

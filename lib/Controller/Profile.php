@@ -100,7 +100,7 @@ class Profile extends \Limbonia\Controller
    *
    * @var array
    */
-  protected $hMenuModels =
+  protected $hMenuItems =
   [
     'view' => 'View',
     'edit' => 'Edit',
@@ -113,7 +113,7 @@ class Profile extends \Limbonia\Controller
    *
    * @var array
    */
-  protected $hSubMenuModels = [];
+  protected $hSubMenuItems = [];
 
   /**
    * List of actions that are allowed to run

@@ -131,7 +131,7 @@ class Controller
    *
    * @var array
    */
-  protected $hMenuModels =
+  protected $hMenuItems =
   [
     'list' => 'List',
     'search' => 'Search',
@@ -150,7 +150,7 @@ class Controller
    *
    * @var array
    */
-  protected $hSubMenuModels =
+  protected $hSubMenuItems =
   [
     'view' => 'View',
     'edit' => 'Edit'
@@ -256,7 +256,7 @@ class Controller
 
     if (count(static::$hSettingsFields) > 0)
     {
-      $this->hMenuModels['settings'] = 'Settings';
+      $this->hMenuItems['settings'] = 'Settings';
       $this->aAllowedActions[] = 'settings';
       $this->hSettings = $this->oApp->getSettings($this->sType);
 
@@ -762,9 +762,9 @@ class Controller
    *
    * @return array
    */
-  public function getMenuModels()
+  public function getMenuItems()
   {
-    return $this->hMenuModels;
+    return $this->hMenuItems;
   }
 
   /**
@@ -783,24 +783,24 @@ class Controller
    * @param boolean $bOnlyUserAllowed (optional) - Should the returned array only contain models that the current user has access to?
    * @return array
    */
-  public function getSubMenuModels($bOnlyUserAllowed = false)
+  public function getSubMenuItems($bOnlyUserAllowed = false)
   {
     if ($bOnlyUserAllowed)
     {
-      $hSubMenuModels = [];
+      $hSubMenuItems = [];
 
-      foreach ($this->hSubMenuModels as $sMenuAction => $sMenuTitle)
+      foreach ($this->hSubMenuItems as $sMenuAction => $sMenuTitle)
       {
         if ($this->allow($sMenuAction))
         {
-          $hSubMenuModels[$sMenuAction] = $sMenuTitle;
+          $hSubMenuItems[$sMenuAction] = $sMenuTitle;
         }
       }
 
-      return $hSubMenuModels;
+      return $hSubMenuItems;
     }
 
-    return $this->hSubMenuModels;
+    return $this->hSubMenuItems;
   }
 
   /**

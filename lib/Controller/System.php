@@ -55,7 +55,7 @@ class System extends \Limbonia\Controller
    *
    * @var array
    */
-  protected $hMenuModels =
+  protected $hMenuItems =
   [
     'description' => 'Description',
     'managecontrollers' => 'Manage Controllers',
@@ -67,7 +67,7 @@ class System extends \Limbonia\Controller
    *
    * @var array
    */
-  protected $hSubMenuModels =
+  protected $hSubMenuItems =
   [
   ];
 

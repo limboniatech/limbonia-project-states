@@ -67,7 +67,7 @@ class User extends \Limbonia\Controller
    *
    * @var array
    */
-  protected $hSubMenuModels =
+  protected $hSubMenuItems =
   [
     'view' => 'View',
     'edit' => 'Edit',

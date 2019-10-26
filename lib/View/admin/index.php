@@ -53,7 +53,7 @@ if ($iGroup > 0)
         $sAdminNav .= "      <a class=\"$sLowerController\" href=\"" . $app->generateUri($sLabel) . "\">" . preg_replace("/([A-Z])/", " $1", $sControllerName) . "</a>\n";
       }
 
-      foreach ($oController->getMenuModels() as $sMenuAction => $sMenuTitle)
+      foreach ($oController->getMenuItems() as $sMenuAction => $sMenuTitle)
       {
         if (!$oController->allow($sMenuAction))
         {

@@ -18,7 +18,7 @@ class ResourceKey extends \Limbonia\Controller
    *
    * @var array
    */
-  protected $hMenuModels =
+  protected $hMenuItems =
   [
     'list' => 'List',
     'create' => 'Create'
