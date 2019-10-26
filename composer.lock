@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "2038398efa998cdb19ce8901a0c711d3",
+    "content-hash": "49393c1dea16e7a34a9ee85e34788565",
     "packages": [
         {
             "name": "limboniatech/limbonia-base",
@@ -44,16 +44,16 @@
         },
         {
             "name": "limboniatech/limbonia-database",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/limboniatech/limbonia-database.git",
-                "reference": "7f8effc957c08f232078a05b5384708c2bc26f2a"
+                "reference": "f505736b4256d9d32d8ef8527bf62f7067450cbf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/limboniatech/limbonia-database/zipball/7f8effc957c08f232078a05b5384708c2bc26f2a",
-                "reference": "7f8effc957c08f232078a05b5384708c2bc26f2a",
+                "url": "https://api.github.com/repos/limboniatech/limbonia-database/zipball/f505736b4256d9d32d8ef8527bf62f7067450cbf",
+                "reference": "f505736b4256d9d32d8ef8527bf62f7067450cbf",
                 "shasum": ""
             },
             "require": {
@@ -78,7 +78,7 @@
                 }
             ],
             "description": "This is the Limbonia Database Library",
-            "time": "2019-10-25T21:26:16+00:00"
+            "time": "2019-10-26T16:01:41+00:00"
         },
         {
             "name": "limboniatech/limbonia-email",
