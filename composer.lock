@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "limboniatech/limbonia-app-base",
-            "version": "1.0.2",
+            "version": "1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/limboniatech/limbonia-app-base.git",
-                "reference": "93840081b1e549fe0e4d70995029b213db8db575"
+                "reference": "b9700a2666c626107de51ef455b262c7fd9361cd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/limboniatech/limbonia-app-base/zipball/93840081b1e549fe0e4d70995029b213db8db575",
-                "reference": "93840081b1e549fe0e4d70995029b213db8db575",
+                "url": "https://api.github.com/repos/limboniatech/limbonia-app-base/zipball/b9700a2666c626107de51ef455b262c7fd9361cd",
+                "reference": "b9700a2666c626107de51ef455b262c7fd9361cd",
                 "shasum": ""
             },
             "require": {
@@ -46,7 +46,7 @@
                 }
             ],
             "description": "This is the Limbonia App Base Library",
-            "time": "2019-10-29T14:26:49+00:00"
+            "time": "2019-10-29T20:03:36+00:00"
         },
         {
             "name": "limboniatech/limbonia-base",
