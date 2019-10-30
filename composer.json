@@ -10,18 +10,20 @@
     ],
     "require": {
         "php": "^7.2",
-        "limboniatech/limbonia-email": "^0.9.0",
-        "limboniatech/limbonia-session-manager": "^1.0",
-        "limboniatech/limbonia-zip": "^0.9.0",
-        "limboniatech/limbonia-tag": "^1.0",
-        "limboniatech/limbonia-base": "^1.0",
-        "limboniatech/limbonia-result": "^1.0",
-        "limboniatech/limbonia-database": "^1.0",
-        "limboniatech/limbonia-app-base": "^1.0"
+        "limboniatech/limbonia-loader": "^1.0.3",
+        "limboniatech/limbonia-email": "^1.0.1",
+        "limboniatech/limbonia-session-manager": "^1.0.3",
+        "limboniatech/limbonia-zip": "^1.0.1",
+        "limboniatech/limbonia-tag": "^1.0.2",
+        "limboniatech/limbonia-base": "^1.0.3",
+        "limboniatech/limbonia-result": "^1.0.5",
+        "limboniatech/limbonia-database": "^1.0.3",
+        "limboniatech/limbonia-app-base": "^1.0.4"
     },
     "autoload": {
         "psr-4": {
             "Limbonia\\": "lib/"
-        }
+        },
+        "files": ["autoloader.php"]
     }
 }
