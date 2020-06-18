@@ -4,6 +4,12 @@ GRANT ALL PRIVILEGES ON `limbonia`.* TO 'limbonia'@'localhost';
 CREATE DATABASE IF NOT EXISTS `limbonia`;
 USE limbonia;
 
+CREATE TABLE IF NOT EXISTS ApiAuth (
+  UserID INTEGER UNSIGNED NOT NULL,
+  ApiToken VARCHAR(255) NOT NULL,
+  INDEX Unique_UserApi(UserID, ApiToken)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS ResourceKey (
   KeyID INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
   Name VARCHAR(25) NOT NULL,
@@ -67,12 +73,16 @@ CREATE TABLE IF NOT EXISTS User (
   PRIMARY KEY (UserID),
   UNIQUE INDEX Unique_Email (Email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+INSERT INTO User (Email, FirstName, LastName, Visible) VALUES ('MasterAdmin', 'Master', 'Admin', 0);
+
+INSERT INTO ApiAuth (UserID, ApiToken) VALUES ((SELECT u.UserID FROM `User` u WHERE u.Email = 'MasterAdmin'), SHA1(RAND()));
 
 CREATE TABLE IF NOT EXISTS User_Role (
   UserID INTEGER UNSIGNED NOT NULL,
   RoleID INTEGER UNSIGNED NOT NULL,
   INDEX Unique_UserRole(UserID, RoleID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+INSERT INTO User_Role (RoleID, UserID) VALUES ((SELECT r.RoleID FROM Role r WHERE r.Name = 'Admin'), (SELECT u.UserID FROM `User` u WHERE u.Email = 'MasterAdmin'));
 
 CREATE TABLE IF NOT EXISTS UserAuth (
   UserID INTEGER UNSIGNED NOT NULL,
@@ -80,6 +90,3 @@ CREATE TABLE IF NOT EXISTS UserAuth (
   LastUseTime TIMESTAMP NOT NULL,
   INDEX Unique_UserAuth(UserID, AuthToken)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-INSERT INTO User (Email, FirstName, LastName, Visible) VALUES ('MasterAdmin', 'Master', 'Admin', 0);
-INSERT INTO User_Role (RoleID, UserID) VALUES ((SELECT r.RoleID FROM Role r WHERE r.Name = 'Admin'), (SELECT u.UserID FROM `User` u WHERE u.Email = 'MasterAdmin'));
