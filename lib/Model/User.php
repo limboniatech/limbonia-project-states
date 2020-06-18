@@ -301,14 +301,14 @@ UNIQUE INDEX Unique_Email (Email)";
   {
     if (empty($sEmail))
     {
-      throw new \Limbonia\Exception\Web('Email not given', null, 401);
+      throw new \Limbonia\Exception\Auth('Authentication failed');
     }
 
     $oUserList = parent::search('User', ['Email' => $sEmail], null, $oDatabase);
 
     if (count($oUserList) == 0)
     {
-      throw new \Limbonia\Exception\Web('Authentication failed', null, 401);
+      throw new \Limbonia\Exception\Auth('Authentication failed');
     }
 
     return $oUserList[0];
@@ -320,7 +320,7 @@ UNIQUE INDEX Unique_Email (Email)";
    * @param string $sAuthToken
    * @param \Limbonia\Database $oDatabase (optional)
    * @return \Limbonia\Model\User
-   * @throws \Limbonia\Exception\Web
+   * @throws \Limbonia\Exception
    */
   public static function getByAuthToken($sAuthToken, \Limbonia\Database $oDatabase = null)
   {
@@ -331,14 +331,14 @@ UNIQUE INDEX Unique_Email (Email)";
 
     if (empty($hRow))
     {
-      throw new \Limbonia\Exception\Web('Authentication failed', null, 401);
+      throw new \Limbonia\Exception\Auth('Authentication failed');
     }
 
     $oUser = \Limbonia\Model::fromId('User', $hRow['UserID'], $oDatabase);
 
     if (!$oUser->active)
     {
-      throw new \Limbonia\Exception\Web('Authentication failed', null, 401);
+      throw new \Limbonia\Exception\Auth('Authentication failed');
     }
 
     $oDatabase->query("UPDATE UserAuth SET LastUseTime = NOW() WHERE AuthToken = '{$hRow['AuthToken']}' AND UserID = {$hRow['UserID']}");
@@ -360,7 +360,7 @@ UNIQUE INDEX Unique_Email (Email)";
 
     if (count($oUserList) == 0)
     {
-      throw new \Limbonia\Exception\Web('Authentication failed', null, 401);
+      throw new \Limbonia\Exception\Auth('Authentication failed');
     }
 
     return $oUserList[0];
@@ -384,6 +384,49 @@ UNIQUE INDEX Unique_Email (Email)";
     }
 
     return $sPassword;
+  }
+
+  /**
+   * Generate an auth_token, add it to the database for this user and then return it
+   *
+   * @return string
+   * @throws \Limbonia\Exception
+   */
+  public function generateApiToken()
+  {
+    $sApiToken = sha1(self::generatePassword());
+    $oResult = $this->getDatabase()->prepare("INSERT INTO ApiAuth (UserID, ApiToken) VALUES (:UserID, :ApiToken, NOW())");
+
+    if (!$oResult->execute(['UserID' => $this->id, 'ApiToken' => $sApiToken]))
+    {
+      throw new \Limbonia\Exception('Failed to store api_token');
+    }
+
+    return $sApiToken;
+  }
+
+  /**
+   * Delete the specified auth_token from this user
+   *
+   * @param type $sAuthToken
+   * @return boolean
+   * @throws \Limbonia\Exception
+   */
+  public function deleteApiToken($sAuthToken)
+  {
+    $oResult = $this->getDatabase()->prepare("DELETE FROM UserAuth WHERE UserID = :UserID AND ApiToken = :ApiToken");
+
+    if (!$oResult->execute(['UserID' => $this->id, 'ApiToken' => $sApiToken]))
+    {
+      throw new \Limbonia\Exception('Failed to delete api_token');
+    }
+
+    if ($oResult->rowCount() == 0)
+    {
+      throw new \Limbonia\Exception("Failed to delete api_token: $sApiToken");
+    }
+
+    return true;
   }
 
   /**
@@ -433,23 +476,23 @@ UNIQUE INDEX Unique_Email (Email)";
    * Authenticate the current user using what ever method they require
    *
    * @param string $sPassword
-   * @throws \Exception
+   * @throws \Limbonia\Exception
    */
   public function authenticate(string $sPassword)
   {
     if (empty($sPassword))
     {
-      throw new \Limbonia\Exception\Web('Password not given', null, 401);
+      throw new \Limbonia\Exception\Auth('Password not given');
     }
 
     if (!$this->active)
     {
-      throw new \Limbonia\Exception\Web('Authentication failed', null, 401);
+      throw new \Limbonia\Exception\Auth('Authentication failed');
     }
 
     if (!password_verify($sPassword, $this->password))
     {
-      throw new \Limbonia\Exception\Web('Authentication failed', null, 401);
+      throw new \Limbonia\Exception\Auth('Authentication failed');
     }
   }
 
@@ -521,8 +564,6 @@ UNIQUE INDEX Unique_Email (Email)";
    */
   public function hasResource($sResource, $sComponent = null)
   {
-    $this->generateResourceList();
-
     if ($this->isAdmin())
     {
       return true;
@@ -662,7 +703,7 @@ UNIQUE INDEX Unique_Email (Email)";
    *
    * @param integer $iTicket - ID of the ticket to check
    * @return boolean
-   * @throws \Exception
+   * @throws \Limbonia\Exception
    */
   public function canAccessTicket($iTicket)
   {
@@ -677,7 +718,7 @@ UNIQUE INDEX Unique_Email (Email)";
     if (!$oResult->execute())
     {
       $aError = $oResult->errorInfo();
-      throw new \Exception("Failed to load data from $this->sTable: {$aError[2]}");
+      throw new \Limbonia\Exception("Failed to load data from $this->sTable: {$aError[2]}");
     }
 
     return $oResult->fetch() > 0;
