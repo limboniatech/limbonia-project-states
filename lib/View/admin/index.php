@@ -103,14 +103,13 @@ if (!empty($content))
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="author" content="Lonnie Blansett">
   <meta name="generator" content="Limbonia <?= \Limbonia\App::version() ?>">
-  <meta name="build-date" content="<?= \Limbonia\App::buildDate() ?>">
   <title><?= $sPageTitle ?></title>
   <link rel="stylesheet" type="text/css" href="<?= $app->domain->uri . '/' . $app->getDir('share') ?>/admin.css" />
 <?php
 if ($app->debug)
 {
-  echo "  <script type=\"text/javascript\" src=\"" . $app->domain->uri . '/' . $app->getDir('share') . "/node_controllers/jquery/dist/jquery.js\"></script>\n";
-  echo "  <script type=\"text/javascript\" src=\"" . $app->domain->uri . '/' . $app->getDir('share') . "/node_controllers/slideout/dist/slideout.js\"></script>\n";
+  echo "  <script type=\"text/javascript\" src=\"" . $app->domain->uri . '/' . $app->getDir('share') . "/node_modules/jquery/dist/jquery.js\"></script>\n";
+  echo "  <script type=\"text/javascript\" src=\"" . $app->domain->uri . '/' . $app->getDir('share') . "/node_modules/slideout/dist/slideout.js\"></script>\n";
   echo "  <script type=\"text/javascript\" src=\"" . $app->domain->uri . '/' . $app->getDir('share') . "/admin.js\"></script>\n";
   echo "  <script type=\"text/javascript\" src=\"" . $app->domain->uri . '/' . $app->getDir('share') . "/ajax.js\"></script>\n";
   echo "  <script type=\"text/javascript\" src=\"" . $app->domain->uri . '/' . $app->getDir('share') . "/select.js\"></script>\n";
