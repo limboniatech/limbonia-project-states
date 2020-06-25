@@ -421,11 +421,6 @@ UNIQUE INDEX Unique_Email (Email)";
       throw new \Limbonia\Exception('Failed to delete api_token');
     }
 
-    if ($oResult->rowCount() == 0)
-    {
-      throw new \Limbonia\Exception("Failed to delete api_token: $sApiToken");
-    }
-
     return true;
   }
 
@@ -462,11 +457,6 @@ UNIQUE INDEX Unique_Email (Email)";
     if (!$oResult->execute(['UserID' => $this->id, 'AuthToken' => $sAuthToken]))
     {
       throw new \Limbonia\Exception('Failed to delete auth_token');
-    }
-
-    if ($oResult->rowCount() == 0)
-    {
-      throw new \Limbonia\Exception("Failed to delete auth_token: $sAuthToken");
     }
 
     return true;
@@ -635,7 +625,7 @@ UNIQUE INDEX Unique_Email (Email)";
     {
       $xValue = trim($xValue);
       //if it validates successfully then let the normal value be returned...
-      \Limbonia\Email::validate($xValue);
+      \Limbonia\Email\Util::validate($xValue);
     }
 
     return parent::formatInput($sName, $xValue);

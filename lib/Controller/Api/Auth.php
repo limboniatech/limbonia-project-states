@@ -1,5 +1,5 @@
 <?php
-namespace Limbonia\Controller;
+namespace Limbonia\Controller\Api;
 
 /**
  * Limbonia Auth Controller class
@@ -9,65 +9,28 @@ namespace Limbonia\Controller;
  * @author Lonnie Blansett <lonnie@limbonia.tech>
  * @package Limbonia
  */
-class Auth extends \Limbonia\Controller
+class Auth extends \Limbonia\Controller\Base\Auth implements \Limbonia\Interfaces\Controller\Api
 {
-  /**
-   * The admin group that this controller belongs to
-   *
-   * @var string
-   */
-  protected static $sGroup = 'Hidden';
+  use \Limbonia\Traits\Controller\Api
+  {
+    validUser as originalValidUser;
+  }
 
   /**
    * List of valid HTTP methods
    *
    * @var array
    */
-  protected static $hHttpMethods =
-  [
-    'head',
-    'get',
-    'post',
-    'delete',
-    'options'
-  ];
-
-  /**
-   * A list of components the current user is allowed to use
-   *
-   * @var array
-   */
-  protected $hAllow =
-  [
-    'create' => true,
-    'delete' => true
-  ];
-
-  /**
-   * Do whatever setup is needed to make this controller work...
-   *
-   * @throws Exception on failure
-   */
-  public function setup()
+  protected static function getHttpMethods()
   {
-    $this->oApp->getDB()->createTable('UserAuth', "UserID INTEGER UNSIGNED NOT NULL,
-AuthToken VARCHAR(255) NOT NULL,
-LastUseTime TIMESTAMP NOT NULL,
-INDEX Unique_UserAuth(UserID, AuthToken)");
-  }
-
-  /**
-   * Deactivate this controller then return a list of types that were deactivated
-   *
-   * @param array $hActiveController - the active controller list
-   * @return array
-   * @throws Exception on failure
-   */
-  public function deactivate(array $hActiveController)
-  {
-    //check if an other auth controller is active and if so then allow deactivation
-    //otherwise throw an exception
-    throw new \Limbonia\Exception("The system requires an auth controller so this can *not* be deactivated");
+    return
+    [
+      'head',
+      'get',
+      'post',
+      'delete',
+      'options'
+    ];
   }
 
   /**
@@ -75,14 +38,14 @@ INDEX Unique_UserAuth(UserID, AuthToken)");
    *
    * @return boolean
    */
-  protected function validUser()
+  public function validUser()
   {
     if ($this->oRouter->method == 'post')
     {
       return true;
     }
 
-    return parent::validUser();
+    return $this->originalValidUser();
   }
 
   /**

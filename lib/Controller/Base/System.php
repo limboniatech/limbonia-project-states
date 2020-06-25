@@ -1,5 +1,5 @@
 <?php
-namespace Limbonia\Controller;
+namespace Limbonia\Controller\Base;
 
 /**
  * Limbonia System Controller class
@@ -9,68 +9,8 @@ namespace Limbonia\Controller;
  * @author Lonnie Blansett <lonnie@limbonia.tech>
  * @package Limbonia
  */
-class System extends \Limbonia\Controller
+class System extends \Limbonia\Controller\Base
 {
-  /**
-   * The admin group that this controller belongs to
-   *
-   * @var string
-   */
-  protected static $sGroup = 'Hidden';
-
-  /**
-   * List of actions that are allowed to run
-   *
-   * @var array
-   */
-  protected $aAllowedActions = ['generatemodelcode', 'managecontrollers', 'config', 'description'];
-  /**
-   * The default method for this controller
-   *
-   * @var string
-   */
-  protected $sDefaultAction = 'description';
-
-  /**
-   * The current method being used by this controller
-   *
-   * @var string
-   */
-  protected $sCurrentAction = 'description';
-
-  /**
-   * List of components that this controller contains along with their descriptions
-   *
-   * @var array
-   */
-  protected static $hComponent =
-  [
-    'description' => 'Explain what the system controller is used for...',
-    'managecontrollers' => 'This is the ability to activate and deactivate controllers.',
-    'config' => 'The ability to configure the system.'
-  ];
-
-  /**
-   * List of menu items that this controller should display
-   *
-   * @var array
-   */
-  protected $hMenuItems =
-  [
-    'description' => 'Description',
-    'managecontrollers' => 'Manage Controllers',
-    'config' => 'Config'
-  ];
-
-  /**
-   * List of sub-menu options
-   *
-   * @var array
-   */
-  protected $hSubMenuItems =
-  [
-  ];
-
   /**
    * Deactivate this controller then return a list of types that were deactivated
    *
@@ -81,35 +21,6 @@ class System extends \Limbonia\Controller
   public function deactivate(array $hActiveController)
   {
     throw new \Limbonia\Exception('The System controller can not be deactivated');
-  }
-
-  /**
-   * Perform the base "GET" code then return null on success
-   *
-   * @return null
-   * @throws \Limbonia\Exception
-   */
-  protected function processApiHead()
-  {
-    return null;
-  }
-
-  /**
-   * Perform and return the default "GET" code
-   *
-   * @return array
-   * @throws \Exception
-   */
-  protected function processApiGet()
-  {
-    switch ($this->oRouter->action)
-    {
-      case 'model-controller-base':
-        break;
-
-      default:
-        throw new \Limbonia\Exception\Web('No action specified for GET System', 0, 400);
-    }
   }
 
   public function generateModelCode($sTable)
@@ -285,59 +196,5 @@ $sDefaultData
    */
   protected \$sIdColumn = $sIdColumn;
 }";
-  }
-
-  /**
-   * Prepare the generatemodelcode view for use
-   */
-  protected function prepareViewGeneratemodelcode()
-  {
-    if ($this->oApp->type == 'cli')
-    {
-      $this->oApp->setDescription('Generate a stub php file for an Model class based on an existing database table');
-      $this->oApp->addOption
-      ([
-        'short' => 't',
-        'long' => 'table',
-        'desc' => 'The table to base the Model code on',
-        'value' => \Limbonia\App\Cli::OPTION_VALUE_REQUIRE
-      ]);
-    }
-  }
-
-  protected function prepareViewPostManagecontrollers()
-  {
-    $oPost = \Limbonia\Input::singleton('post');
-    $aCurrentActiveController = empty($oPost->activecontroller) ? [] : array_keys($oPost->activecontroller);
-    $aPriorActiveController = array_keys($this->oApp->activeControllers());
-    $aActivate = array_diff($aCurrentActiveController, $aPriorActiveController);
-    $aDeactivate = array_diff($aPriorActiveController, $aCurrentActiveController);
-    $aError = [];
-
-    foreach ($aActivate as $sController)
-    {
-      try
-      {
-        $this->oApp->activateController($sController);
-      }
-      catch (\Limbonia\Exception $e)
-      {
-        $aError[] = $e->getMessage();
-      }
-    }
-
-    foreach ($aDeactivate as $sController)
-    {
-      try
-      {
-        $this->oApp->deactivateController($sController);
-      }
-      catch (\Limbonia\Exception $e)
-      {
-        $aError[] = $e->getMessage();
-      }
-    }
-
-    $this->oApp->viewData('error', $aError);
   }
 }

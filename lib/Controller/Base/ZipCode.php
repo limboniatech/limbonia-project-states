@@ -1,5 +1,5 @@
 <?php
-namespace Limbonia\Controller;
+namespace Limbonia\Controller\Base;
 
 /**
  * Limbonia Role Controller class
@@ -9,16 +9,9 @@ namespace Limbonia\Controller;
  * @author Lonnie Blansett <lonnie@limbonia.tech>
  * @package Limbonia
  */
-class ZipCode extends \Limbonia\Controller
+class ZipCode extends \Limbonia\Controller\Base
 {
-  use \Limbonia\Traits\ModelController;
-
-  /**
-   * The admin group that this controller belongs to
-   *
-   * @var string
-   */
-  protected static $sGroup = 'Hidden';
+  use \Limbonia\Traits\Controller\BaseModel;
 
   /**
    * Activate this controller and any required dependencies then return a list of types that were activated
