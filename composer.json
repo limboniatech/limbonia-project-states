@@ -16,6 +16,7 @@
         "limboniatech/limbonia-result": "dev-master",
         "limboniatech/limbonia-database": "dev-master",
         "limboniatech/limbonia-app-base": "dev-master"
+        "limboniatech/limbonia-states": "dev-master"
     },
     "autoload": {
         "psr-4": {
