@@ -10,15 +10,15 @@
     ],
     "require": {
         "php": "^7.2",
-        "limboniatech/limbonia-loader": "^1.0.3",
-        "limboniatech/limbonia-email": "^1.0.1",
-        "limboniatech/limbonia-session-manager": "^1.0.3",
-        "limboniatech/limbonia-zip": "^1.0.1",
-        "limboniatech/limbonia-tag": "^1.0.2",
-        "limboniatech/limbonia-base": "^1.0.3",
-        "limboniatech/limbonia-result": "^1.0.5",
-        "limboniatech/limbonia-database": "^1.0.3",
-        "limboniatech/limbonia-app-base": "^1.0.4"
+        "limboniatech/limbonia-loader": "dev-master",
+        "limboniatech/limbonia-email": "dev-master",
+        "limboniatech/limbonia-session-manager": "dev-master",
+        "limboniatech/limbonia-zip": "dev-master",
+        "limboniatech/limbonia-tag": "dev-master",
+        "limboniatech/limbonia-base": "dev-master",
+        "limboniatech/limbonia-result": "dev-master",
+        "limboniatech/limbonia-database": "dev-master",
+        "limboniatech/limbonia-app-base": "dev-master"
     },
     "autoload": {
         "psr-4": {
