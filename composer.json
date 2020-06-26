@@ -11,11 +11,7 @@
     "require": {
         "php": "^7.2",
         "limboniatech/limbonia-loader": "dev-master",
-        "limboniatech/limbonia-email": "dev-master",
-        "limboniatech/limbonia-base": "dev-master",
-        "limboniatech/limbonia-result": "dev-master",
-        "limboniatech/limbonia-database": "dev-master",
-        "limboniatech/limbonia-app-base": "dev-master"
+        "limboniatech/limbonia-app-base": "dev-master",
         "limboniatech/limbonia-states": "dev-master"
     },
     "autoload": {
