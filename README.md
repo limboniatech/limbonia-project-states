@@ -1,4 +1,4 @@
-# limbonia-project-state
+# limbonia-project-states
 This repository contains Limbonia code for dealing with US states and zipcodes
 
 ## TODO
