@@ -1,6 +1,6 @@
 {
-    "name": "limboniatech/limbonia-project-base",
-    "description": "This is the Limbonia Code Library",
+    "name": "limboniatech/limbonia-project-states",
+    "description": "This is the Limbonia US states Library",
     "type": "library",
     "license": "BSD-3-Clause",
     "authors": [
@@ -12,7 +12,7 @@
     "require": {
         "php": "^7.2",
         "limboniatech/limbonia-loader": "dev-master",
-        "limboniatech/limbonia-app-base": "dev-master"
+        "limboniatech/limbonia-states": "dev-master",
     },
     "autoload": {
         "psr-4": {
