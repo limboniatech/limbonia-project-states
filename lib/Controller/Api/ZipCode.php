@@ -12,5 +12,5 @@ namespace Limbonia\Controller\Api;
 class ZipCode extends \Limbonia\Controller\ZipCode implements \Limbonia\Interfaces\Controller\Api
 {
   use \Limbonia\Traits\Controller\Api;
-  use \Limbonia\Traits\Controller\ApiModel;
+  use \Limbonia\Traits\Controller\Api\HasModel;
 }
