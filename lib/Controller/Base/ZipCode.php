@@ -1,5 +1,5 @@
 <?php
-namespace Limbonia\Controller\Base;
+namespace Limbonia\Controller;
 
 /**
  * Limbonia Role Controller class
@@ -9,9 +9,9 @@ namespace Limbonia\Controller\Base;
  * @author Lonnie Blansett <lonnie@limbonia.tech>
  * @package Limbonia
  */
-class ZipCode extends \Limbonia\Controller\Base
+class ZipCode extends \Limbonia\Controller
 {
-  use \Limbonia\Traits\Controller\BaseModel;
+  use \Limbonia\Traits\Controller\HasModel;
 
   /**
    * Activate this controller and any required dependencies then return a list of types that were activated

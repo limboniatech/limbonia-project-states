@@ -9,7 +9,7 @@ namespace Limbonia\Controller\Api;
  * @author Lonnie Blansett <lonnie@limbonia.tech>
  * @package Limbonia
  */
-class ZipCode extends \Limbonia\Controller\Base\ZipCode implements \Limbonia\Interfaces\Controller\Api
+class ZipCode extends \Limbonia\Controller\ZipCode implements \Limbonia\Interfaces\Controller\Api
 {
   use \Limbonia\Traits\Controller\Api;
   use \Limbonia\Traits\Controller\ApiModel;
